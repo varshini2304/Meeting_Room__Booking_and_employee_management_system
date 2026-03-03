@@ -21,7 +21,26 @@
 
 ## ⚙️ Installation & Setup
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/varshini2304/Toyota_Room_Booking.git
-cd Toyota_Room_Booking
+client/
+│
+├── pages/          # Application pages (Home, Login, Dashboard, etc.)
+├── components/     # Reusable UI components
+└── services/       # API service calls to backend
+
+server/
+│
+├── models/         # Database models
+│   ├── user.model.js
+│   ├── room.model.js
+│   ├── booking.model.js
+│   └── notification.model.js
+│
+├── controllers/    # Business logic for routes
+├── routes/         # API route definitions
+├── middlewares/    # Custom middleware (e.g., authentication)
+│   └── auth.js
+│
+└── services/       # External/internal services (e.g., email service)
+    └── emailService.js
+
+
