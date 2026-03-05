@@ -189,7 +189,7 @@ server/
 
 - auth.middleware.js
 
-#### Flow:
+### Flow:
 
 > Login → Controller → Validate → Generate JWT → Return Token
 
