@@ -48,7 +48,7 @@ server/
 
 
 
-##🏗 1️⃣ COMPLETE SYSTEM ARCHITECTURE
+## 🏗 1️⃣ COMPLETE SYSTEM ARCHITECTURE
 ```
 React (Frontend)
       ↓
@@ -66,7 +66,7 @@ MongoDB
       ↓
 Email Service (NodeMailer)
 ```
-🧠 2️⃣ ARCHITECTURE STYLE
+## 🧠 2️⃣ ARCHITECTURE STYLE
 
 We will use:
 
@@ -193,7 +193,6 @@ server/
 
 > Login → Controller → Validate → Generate JWT → Return Token
 
-Middleware:
+### Middleware:
 
-authMiddleware → verify token → attach user to req
-roleMiddleware → check EMPLOYEE or MANAGER
+> authMiddleware → verify token → attach user to req roleMiddleware → check EMPLOYEE or MANAGER
