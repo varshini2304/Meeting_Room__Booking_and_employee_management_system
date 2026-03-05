@@ -73,49 +73,56 @@ We will use:
 ✔ Modular Folder Structure
 
 📁 FULL PROJECT STRUCTURE
-🖥 FRONTEND (React)
+## Client
+```
 client/
 │
 ├── public/
 │
 ├── src/
+│   │
 │   ├── assets/
+│   │
 │   ├── components/
-│   │     ├── Navbar.jsx
-│   │     ├── Sidebar.jsx
-│   │     ├── RoomCard.jsx
-│   │     ├── BookingModal.jsx
-│   │     ├── NotificationDropdown.jsx
+│   │   ├── Navbar.jsx
+│   │   ├── Sidebar.jsx
+│   │   ├── RoomCard.jsx
+│   │   ├── BookingModal.jsx
+│   │   ├── NotificationDropdown.jsx
 │   │
 │   ├── pages/
-│   │     ├── Login.jsx
-│   │     ├── Dashboard.jsx
-│   │     ├── CreateBooking.jsx
-│   │     ├── ManageBookings.jsx
-│   │     ├── AllBookings.jsx
-│   │     ├── Profile.jsx
-│   │     ├── ManagerDashboard.jsx
-│   │     ├── CreateRoom.jsx
-│   │     ├── EditRoom.jsx
+│   │   ├── Login.jsx
+│   │   ├── Dashboard.jsx
+│   │   ├── CreateBooking.jsx
+│   │   ├── ManageBookings.jsx
+│   │   ├── AllBookings.jsx
+│   │   ├── Profile.jsx
+│   │   ├── ManagerDashboard.jsx
+│   │   ├── CreateRoom.jsx
+│   │   ├── EditRoom.jsx
 │   │
 │   ├── services/
-│   │     ├── authService.js
-│   │     ├── bookingService.js
-│   │     ├── roomService.js
-│   │     ├── notificationService.js
+│   │   ├── authService.js
+│   │   ├── bookingService.js
+│   │   ├── roomService.js
+│   │   ├── notificationService.js
 │   │
 │   ├── context/
-│   │     ├── AuthContext.jsx
+│   │   ├── AuthContext.jsx
 │   │
 │   ├── utils/
-│   │     ├── slotGenerator.js
+│   │   ├── slotGenerator.js
 │   │
 │   ├── App.jsx
 │   ├── routes.jsx
 │   ├── main.jsx
 │
 └── package.json
-🔙 BACKEND (Node + Express)
+
+```
+
+## Server
+```
 server/
 │
 ├── config/
@@ -154,9 +161,16 @@ server/
 ├── utils/
 │   ├── generateSlots.js
 │
+├── uploads/
+│   └── rooms/
+│
 ├── app.js
 ├── server.js
+│
 └── package.json
+```
+
+
 🔐 AUTH FLOW
 Files involved:
 
