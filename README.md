@@ -20,6 +20,7 @@
 ---
 
 ## ⚙️ Installation & Setup
+```
 
 client/
 │
@@ -43,9 +44,12 @@ server/
 └── services/       # External/internal services (e.g., email service)
     └── emailService.js
 
+```
+
 
 
 ##🏗 1️⃣ COMPLETE SYSTEM ARCHITECTURE
+```
 React (Frontend)
       ↓
 API Layer (Axios Services)
@@ -61,6 +65,7 @@ Models (Mongoose)
 MongoDB
       ↓
 Email Service (NodeMailer)
+```
 🧠 2️⃣ ARCHITECTURE STYLE
 
 We will use:
@@ -171,22 +176,22 @@ server/
 ```
 
 
-🔐 AUTH FLOW
-Files involved:
+## 🔐 AUTH FLOW
+### Files involved:
 
-auth.routes.js
+- auth.routes.js
 
-auth.controller.js
+- auth.controller.js
 
-user.model.js
+- user.model.js
 
-jwt.js
+- jwt.js
 
-auth.middleware.js
+- auth.middleware.js
 
-Flow:
+#### Flow:
 
-Login → Controller → Validate → Generate JWT → Return Token
+> Login → Controller → Validate → Generate JWT → Return Token
 
 Middleware:
 
