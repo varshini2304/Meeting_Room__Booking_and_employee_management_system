@@ -1,23 +1,28 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { SlotSelector } from "@/components/booking/SlotSelector";
 import { InviteMembers } from "@/components/booking/InviteMembers";
 import { RoomCard } from "@/components/booking/RoomCard";
-import { useCreateBooking } from "@/hooks/queries/useBookings";
+import { useDayBookings } from "@/hooks/queries/useBookings";
 import { useRoomAvailability } from "@/hooks/queries/useRooms";
 import type { Room } from "@/api/types";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import roomA from "@/assets/room-a.jpg";
 import roomB from "@/assets/room-b.jpg";
 import conferenceRoom from "@/assets/conference-room.jpg";
 import boardroom from "@/assets/boardroom.jpg";
 
-const timeSlots = [
-  "9:00", "10:00", "10:30", "10:40", "11:00", "12:30", "13:30", "15:30", "17:00", "17:30", "18:00"
-];
-
-const toBackendTime = (slot: string) => slot.padStart(5, "0").replace(" ", "");
+const pad = (value: number) => String(value).padStart(2, "0");
+const generateTimeSlots = (startHour = 8, endHour = 20) => {
+  const slots: string[] = [];
+  for (let h = startHour; h < endHour; h += 1) {
+    slots.push(`${pad(h)}:00`);
+    slots.push(`${pad(h)}:30`);
+  }
+  return slots;
+};
 const getRoomImage = (room: Room) => {
   if (room.imageUrl) return room.imageUrl;
   if (room.roomNumber?.toLowerCase().includes("a")) return roomA;
@@ -28,41 +33,64 @@ const getRoomImage = (room: Room) => {
 };
 
 const BookRoom = () => {
-  const [date, setDate] = useState<Date | undefined>(new Date(2024, 3, 18));
+  const [date, setDate] = useState<Date | undefined>(new Date());
   const [invitedMembers, setInvitedMembers] = useState<string[]>([]);
-  const [selectedTime] = useState("10:00");
+  const [selectedTime, setSelectedTime] = useState<string>("");
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isManagerRoute = location.pathname.startsWith("/manager");
+  const timeSlots = useMemo(() => generateTimeSlots(8, 20), []);
   const dateStr = (date || new Date()).toISOString().slice(0, 10);
-  const { data: rooms = [], refetch } = useRoomAvailability({ date: dateStr, startTime: selectedTime }, true);
-  const createBooking = useCreateBooking();
+  const { data: dayBookings = [] } = useDayBookings(dateStr, Boolean(dateStr));
+  const { data: rooms = [] } = useRoomAvailability({ date: dateStr, startTime: selectedTime }, Boolean(selectedTime));
 
-  const handleBook = async (roomId?: string) => {
+  const bookedSlots = useMemo(
+    () => [...new Set(dayBookings.map((booking) => booking.startTime))],
+    [dayBookings],
+  );
+  const slotSummary = useMemo(() => {
+    const summary: Record<string, { count: number; rooms: string[] }> = {};
+    dayBookings.forEach((booking) => {
+      const room = booking.roomId as Room;
+      const key = booking.startTime;
+      if (!summary[key]) summary[key] = { count: 0, rooms: [] };
+      summary[key].count += 1;
+      if (room?.roomNumber) summary[key].rooms.push(room.roomNumber);
+    });
+    return summary;
+  }, [dayBookings]);
+
+  const handleBook = (roomId?: string) => {
     if (!roomId) return;
-    try {
-      await createBooking.mutateAsync({
+    if (!selectedTime || !dateStr) {
+      toast({
+        title: "Select date and time",
+        description: "Date and time are required to continue booking.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const room = rooms.find((value) => value._id === roomId);
+    navigate(isManagerRoute ? "/manager/confirm-booking" : "/confirm-booking", {
+      state: {
         roomId,
+        room,
         date: dateStr,
         startTime: selectedTime,
         invitedMembers,
-      });
-      toast({ title: "Booking created", description: "Room booking successful." });
-      refetch();
-    } catch (error) {
-      toast({
-        title: "Booking failed",
-        description: error instanceof Error ? error.message : "Unable to create booking",
-        variant: "destructive",
-      });
-    }
+      },
+    });
   };
 
   return (
     <>
-      <h1 className="text-2xl font-bold text-foreground mb-6">Book a Meeting Room</h1>
+      <div className="mx-auto w-full max-w-[1280px]">
+      <h1 className="text-2xl font-bold text-foreground mb-4">Book a Meeting Room</h1>
 
-      <div className="bg-card rounded-xl border border-border shadow-sm p-5 mb-6">
-        <div className="flex gap-6">
-          <div className="w-64 flex-shrink-0">
+      <div className="bg-card rounded-xl border border-border shadow-sm p-4 mb-4">
+        <div className="space-y-4">
+          <div className="w-full lg:w-72">
             <Calendar
               mode="single"
               selected={date}
@@ -70,21 +98,29 @@ const BookRoom = () => {
               className="rounded-lg border border-border"
             />
           </div>
-          <SlotSelector
-            timeSlots={timeSlots}
-            bookedSlots={[0, 1, 2]}
-            bookingInfo={{ title: "Project Kickoff", time: "9:00 AM - 10:30 AM", people: "2/8 people" }}
-          />
+          <div>
+            <h3 className="text-sm font-semibold text-card-foreground mb-2">Select Time Slot</h3>
+            <SlotSelector
+              timeSlots={timeSlots}
+              bookedSlots={bookedSlots}
+              slotSummary={slotSummary}
+              selectedTime={selectedTime}
+              onSelectTime={setSelectedTime}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="flex gap-6">
-        <div className="w-64 flex-shrink-0">
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="w-full lg:w-72 flex-shrink-0">
           <InviteMembers initialMembers={[]} onMembersChange={setInvitedMembers} />
         </div>
         <div className="flex-1">
-          <h2 className="font-semibold text-foreground mb-4">April 2024</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <h2 className="font-semibold text-foreground mb-3">
+            {new Date(dateStr).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}
+            {selectedTime ? ` at ${selectedTime}` : " (Select a time slot)"}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {rooms.map((room) => (
               <RoomCard
                 key={room._id}
@@ -93,13 +129,18 @@ const BookRoom = () => {
                 type={room.roomType}
                 capacity={room.capacity}
                 image={getRoomImage(room)}
+                amenities={room.amenities}
                 booked={room.isAvailable === false ? { time: `${selectedTime} slot`, people: "-", title: "Booked" } : null}
                 onBook={handleBook}
-                bookingInProgress={createBooking.isPending}
+                bookingInProgress={false}
               />
             ))}
           </div>
+          {selectedTime && rooms.length === 0 && (
+            <p className="text-sm text-muted-foreground mt-4">No rooms available for the selected date and time.</p>
+          )}
         </div>
+      </div>
       </div>
     </>
   );

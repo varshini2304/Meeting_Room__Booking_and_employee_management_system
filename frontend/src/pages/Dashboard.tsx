@@ -3,6 +3,7 @@ import { UpcomingMeetings } from "@/components/UpcomingMeetings";
 import { useMyBookings } from "@/hooks/queries/useBookings";
 import { useRoomAvailability } from "@/hooks/queries/useRooms";
 import type { Room } from "@/api/types";
+import { useNavigate } from "react-router-dom";
 
 import roomA from "@/assets/room-a.jpg";
 import roomB from "@/assets/room-b.jpg";
@@ -19,6 +20,7 @@ const getRoomImage = (room: Room) => {
 };
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const today = new Date().toISOString().slice(0, 10);
   const { data: rooms = [] } = useRoomAvailability({ date: today, startTime: "10:00" }, true);
   const { data: upcomingBookings = [] } = useMyBookings();
@@ -38,6 +40,7 @@ const Dashboard = () => {
                   type={room.roomType}
                   capacity={room.capacity}
                   image={getRoomImage(room)}
+                  onBook={() => navigate("/book-room")}
                 />
               ))}
             </div>

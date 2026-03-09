@@ -1,13 +1,25 @@
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
-import { useCancelBooking, useConfirmOccupancy, useMyBookings } from "@/hooks/queries/useBookings";
+import { useBookingHistory, useCancelBooking } from "@/hooks/queries/useBookings";
 import type { Booking, Room } from "@/api/types";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-type Status = "Completed" | "Cancelled";
+type Status = "Scheduled" | "Completed" | "Cancelled";
 
 const StatusBadge = ({ status }: { status: Status }) => {
   const styles: Record<Status, string> = {
-    Completed: "bg-accent text-accent-foreground",
+    Scheduled: "bg-accent text-accent-foreground",
+    Completed: "bg-green-50 text-success",
     Cancelled: "bg-destructive/10 text-destructive",
   };
   return <span className={`text-xs font-medium px-3 py-1 rounded-full ${styles[status]}`}>{status}</span>;
@@ -28,12 +40,22 @@ const AvatarGroup = ({ count, extra }: { count: number; extra: number }) => (
 );
 
 const ManageBookings = () => {
-  const { data: bookings = [] } = useMyBookings();
+  const { data: bookings = [] } = useBookingHistory();
   const cancelMutation = useCancelBooking();
-  const confirmMutation = useConfirmOccupancy();
+  const { toast } = useToast();
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
+  const [participantEmail, setParticipantEmail] = useState("");
 
-  const mapped = bookings.map((b: Booking) => {
+  const mapped = useMemo(() => bookings.map((b: Booking) => {
+    const now = new Date();
+    const endAt = new Date(`${b.date}T${b.endTime}:00`);
     const room = b.roomId as Room;
+    const derivedStatus =
+      b.status === "cancelled"
+        ? "Cancelled"
+        : !Number.isNaN(endAt.getTime()) && endAt < now
+          ? "Completed"
+          : "Scheduled";
     return {
       id: b._id,
       room: room?.roomNumber || "Room",
@@ -42,13 +64,23 @@ const ManageBookings = () => {
       time: `${b.startTime} - ${b.endTime}`,
       participants: b.invitedMembers?.length || 0,
       avatarCount: Math.min(3, b.invitedMembers?.length || 0),
-      status: (b.status === "cancelled" ? "Cancelled" : "Completed") as Status,
+      status: derivedStatus as Status,
     };
-  });
+  }), [bookings]);
+
+  const handleParticipantSubmit = () => {
+    if (!participantEmail.trim()) return;
+    toast({
+      title: "Participant email captured",
+      description: `${participantEmail.trim()} added for invitation.`,
+    });
+    setParticipantEmail("");
+    setSelectedBookingId(null);
+  };
 
   return (
     <>
-      <h1 className="text-2xl font-bold text-foreground mb-6">Booking History</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-6">Manage Bookings</h1>
       <div className="bg-card rounded-xl border border-border shadow-sm p-5">
         <div className="flex items-center gap-3 mb-6">
           <button className="flex items-center gap-2 border border-border rounded-lg px-4 py-2 text-sm text-foreground">
@@ -74,8 +106,8 @@ const ManageBookings = () => {
               </tr>
             </thead>
             <tbody>
-              {mapped.map((b, i) => (
-                <tr key={i} className="border-b border-border last:border-b-0">
+              {mapped.map((b) => (
+                <tr key={b.id} className="border-b border-border last:border-b-0">
                   <td className="py-4 pr-4">
                     <p className="font-semibold text-sm text-card-foreground">
                       {b.room} {b.meeting}
@@ -85,7 +117,12 @@ const ManageBookings = () => {
                   <td className="py-4 pr-4 text-sm text-card-foreground">{b.date}</td>
                   <td className="py-4 pr-4 text-sm text-card-foreground">{b.time}</td>
                   <td className="py-4 pr-4">
-                    <AvatarGroup count={b.avatarCount} extra={b.participants} />
+                    <div className="flex items-center gap-3">
+                      <AvatarGroup count={b.avatarCount} extra={b.participants} />
+                      <Button variant="outline" size="sm" onClick={() => setSelectedBookingId(b.id)}>
+                        Add
+                      </Button>
+                    </div>
                   </td>
                   <td className="py-4 pr-4">
                     <StatusBadge status={b.status} />
@@ -93,16 +130,9 @@ const ManageBookings = () => {
                   <td className="py-4">
                     <div className="flex items-center gap-2">
                       <button
-                        className="text-xs text-primary hover:underline"
-                        onClick={() => confirmMutation.mutate(b.id)}
-                        disabled={confirmMutation.isPending}
-                      >
-                        Confirm
-                      </button>
-                      <button
                         className="text-xs text-destructive hover:underline"
                         onClick={() => cancelMutation.mutate(b.id)}
-                        disabled={cancelMutation.isPending}
+                        disabled={cancelMutation.isPending || b.status !== "Scheduled"}
                       >
                         Cancel
                       </button>
@@ -111,10 +141,37 @@ const ManageBookings = () => {
                   </td>
                 </tr>
               ))}
+              {mapped.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
+                    No bookings found for this user.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
+      <Dialog open={Boolean(selectedBookingId)} onOpenChange={(open) => !open && setSelectedBookingId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Participant</DialogTitle>
+            <DialogDescription>Enter participant email address for this meeting.</DialogDescription>
+          </DialogHeader>
+          <Input
+            type="email"
+            placeholder="participant@company.com"
+            value={participantEmail}
+            onChange={(e) => setParticipantEmail(e.target.value)}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedBookingId(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleParticipantSubmit}>Add Participant</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

@@ -6,9 +6,10 @@ interface RoomCardProps {
   type: string;
   capacity: number;
   image: string;
+  onBook?: () => void;
 }
 
-export function RoomCard({ name, type, capacity, image }: RoomCardProps) {
+export function RoomCard({ name, type, capacity, image, onBook }: RoomCardProps) {
   return (
     <div className="bg-card rounded-xl overflow-hidden border border-border shadow-sm">
       <img src={image} alt={name} className="w-full h-40 object-cover" />
@@ -21,7 +22,7 @@ export function RoomCard({ name, type, capacity, image }: RoomCardProps) {
           <span className="text-sm text-muted-foreground border border-border rounded-full px-3 py-1 flex items-center gap-1">
             <Users className="h-3.5 w-3.5" /> {capacity} people
           </span>
-          <Button size="sm" className="rounded-full px-6">
+          <Button size="sm" className="rounded-full px-6" onClick={onBook}>
             Book
           </Button>
         </div>

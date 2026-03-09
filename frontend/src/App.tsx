@@ -19,6 +19,9 @@ import ManageRooms from "./pages/ManageRooms";
 import AllBookings from "./pages/AllBookings";
 import RoomAvailability from "./pages/RoomAvailability";
 import NotFound from "./pages/NotFound";
+import MeetingCheckIn from "./pages/MeetingCheckIn";
+import ConfirmBooking from "./pages/ConfirmBooking";
+import BookingSuccess from "./pages/BookingSuccess";
 import { useAuth } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient();
@@ -34,6 +37,7 @@ const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<RoleEntry />} />
     <Route path="/login" element={<Login />} />
+    <Route path="/meeting-check-in" element={<MeetingCheckIn />} />
 
     <Route
       element={
@@ -44,6 +48,8 @@ const AppRoutes = () => (
     >
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/book-room" element={<BookRoom />} />
+      <Route path="/confirm-booking" element={<ConfirmBooking />} />
+      <Route path="/booking-success" element={<BookingSuccess />} />
       <Route path="/manage-bookings" element={<ManageBookings />} />
       <Route path="/booking-history" element={<BookingHistory />} />
       <Route path="/notifications" element={<Notifications />} />
@@ -60,6 +66,8 @@ const AppRoutes = () => (
     >
       <Route index element={<ManagerDashboard />} />
       <Route path="book-room" element={<BookRoom />} />
+      <Route path="confirm-booking" element={<ConfirmBooking />} />
+      <Route path="booking-success" element={<BookingSuccess />} />
       <Route path="my-bookings" element={<ManageBookings />} />
       <Route path="booking-history" element={<BookingHistory />} />
       <Route path="create-room" element={<CreateRoom />} />

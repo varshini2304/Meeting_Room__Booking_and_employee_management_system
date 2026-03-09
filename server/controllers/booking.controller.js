@@ -1,5 +1,10 @@
 import { Booking } from "../models/booking.model.js";
-import { createBooking as createBookingService } from "../services/booking.service.js";
+import {
+  cancelNoShowBookings,
+  confirmOccupancyByToken,
+  createBooking as createBookingService,
+  getCheckInDetailsByToken,
+} from "../services/booking.service.js";
 
 export const createBooking = async (req, res, next) => {
   try {
@@ -42,6 +47,20 @@ export const getAllBookings = async (req, res, next) => {
   }
 };
 
+export const getDayBookings = async (req, res, next) => {
+  try {
+    const { date } = req.query;
+    if (!date) return res.status(400).json({ message: "date is required" });
+    const bookings = await Booking.find({ date, status: "booked" })
+      .populate("roomId")
+      .populate("ownerId", "name email employeeId")
+      .sort({ startTime: 1 });
+    return res.json(bookings);
+  } catch (error) {
+    return next(error);
+  }
+};
+
 export const getBookingHistory = async (req, res, next) => {
   try {
     const bookings = await Booking.find({ ownerId: req.user._id })
@@ -79,6 +98,37 @@ export const confirmOccupancy = async (req, res, next) => {
     booking.occupancyConfirmedAt = new Date();
     await booking.save();
     return res.json({ message: "Occupancy confirmed", booking });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getCheckInDetails = async (req, res, next) => {
+  try {
+    const token = String(req.query.token || "");
+    if (!token) return res.status(400).json({ message: "token is required" });
+    const details = await getCheckInDetailsByToken(token);
+    return res.json(details);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const confirmOccupancyWithToken = async (req, res, next) => {
+  try {
+    const token = String(req.query.token || "");
+    if (!token) return res.status(400).json({ message: "token is required" });
+    const booking = await confirmOccupancyByToken(token);
+    return res.json({ message: "Occupancy confirmed", booking });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const runNoShowSweep = async (req, res, next) => {
+  try {
+    const cancelled = await cancelNoShowBookings();
+    return res.json({ cancelled });
   } catch (error) {
     return next(error);
   }

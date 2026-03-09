@@ -2,7 +2,12 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "change-me";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "8h";
+const MEETING_LINK_SECRET = process.env.MEETING_LINK_SECRET || JWT_SECRET;
+const MEETING_LINK_EXPIRES_IN = process.env.MEETING_LINK_EXPIRES_IN || "7d";
 
 export const signToken = (payload) => jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 export const verifyToken = (token) => jwt.verify(token, JWT_SECRET);
+export const signMeetingLinkToken = (payload) =>
+  jwt.sign(payload, MEETING_LINK_SECRET, { expiresIn: MEETING_LINK_EXPIRES_IN });
+export const verifyMeetingLinkToken = (token) => jwt.verify(token, MEETING_LINK_SECRET);
 

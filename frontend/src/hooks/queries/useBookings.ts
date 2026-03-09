@@ -3,6 +3,7 @@ import {
   cancelBookingApi,
   confirmOccupancyApi,
   createBookingApi,
+  getDayBookingsApi,
   getAllBookingsApi,
   getBookingHistoryApi,
   getMyBookingsApi,
@@ -24,6 +25,13 @@ export const useAllBookings = () =>
   useQuery({
     queryKey: ["bookings", "all"],
     queryFn: getAllBookingsApi,
+  });
+
+export const useDayBookings = (date: string, enabled = true) =>
+  useQuery({
+    queryKey: ["bookings", "day", date],
+    queryFn: () => getDayBookingsApi(date),
+    enabled: enabled && Boolean(date),
   });
 
 export const useCreateBooking = () => {

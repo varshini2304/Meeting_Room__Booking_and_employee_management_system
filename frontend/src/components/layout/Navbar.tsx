@@ -30,9 +30,6 @@ export function Navbar() {
       <div className="flex items-center gap-3">
         <SidebarTrigger className="text-muted-foreground" />
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Smartphone className="h-4 w-4" />
-          <Triangle className="h-4 w-4" />
-          <Monitor className="h-4 w-4" />
         </div>
       </div>
       <div className="flex items-center gap-2 bg-secondary rounded-full px-4 py-1.5 w-64">

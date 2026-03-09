@@ -1,4 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const fallbackHost = typeof window !== "undefined" ? window.location.hostname : "localhost";
+const API_BASE = import.meta.env.VITE_API_URL || `http://${fallbackHost}:5000/api`;
 const TOKEN_KEY = "app_token";
 
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
