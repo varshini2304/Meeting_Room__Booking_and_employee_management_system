@@ -114,6 +114,18 @@ export const getCheckInDetails = async (req, res, next) => {
   }
 };
 
+export const openCheckInPage = async (req, res, next) => {
+  try {
+    const token = String(req.query.token || "");
+    if (!token) return res.status(400).json({ message: "token is required" });
+    const frontendBase = process.env.FRONTEND_URL || process.env.CLIENT_URL || "http://localhost:5173";
+    const redirectUrl = `${frontendBase.replace(/\/$/, "")}/meeting-check-in?token=${encodeURIComponent(token)}`;
+    return res.redirect(302, redirectUrl);
+  } catch (error) {
+    return next(error);
+  }
+};
+
 export const confirmOccupancyWithToken = async (req, res, next) => {
   try {
     const token = String(req.query.token || "");

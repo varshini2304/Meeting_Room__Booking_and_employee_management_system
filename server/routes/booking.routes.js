@@ -8,7 +8,8 @@ import {
   getBookingHistory,
   getCheckInDetails,
   getDayBookings,
-  getMyUpcomingBookings
+  getMyUpcomingBookings,
+  openCheckInPage
 } from "../controllers/booking.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
 import { authorize } from "../middlewares/role.middleware.js";
@@ -16,6 +17,7 @@ import { authorize } from "../middlewares/role.middleware.js";
 const router = Router();
 
 router.get("/check-in/details", getCheckInDetails);
+router.get("/check-in/page", openCheckInPage);
 router.post("/check-in", confirmOccupancyWithToken);
 
 router.post("/", protect, createBooking);

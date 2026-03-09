@@ -12,6 +12,8 @@ const getCheckInCutoff = (date, startTime) => {
   const start = toDateTime(date, startTime);
   return new Date(start.getTime() + 10 * 60 * 1000);
 };
+const getBackendBase = () =>
+  process.env.BACKEND_URL || process.env.SERVER_URL || `http://localhost:${process.env.PORT || 5000}`;
 
 const buildRoomLabel = (room) => `${room.branch}-${room.block}-${room.roomNumber}`;
 const buildRoomLocation = (room) => `${room.country}, ${room.branch}, ${room.block}, ${room.floor}`;
@@ -58,8 +60,8 @@ export const createBooking = async ({ ownerId, roomId, date, startTime, invitedM
       bookingId: String(booking._id),
       ownerId: String(ownerId),
     });
-    const frontendBase = process.env.FRONTEND_URL || process.env.CLIENT_URL || "http://localhost:8080";
-    const meetingLink = `${frontendBase.replace(/\/$/, "")}/meeting-check-in?token=${encodeURIComponent(meetingToken)}`;
+    const backendBase = getBackendBase();
+    const meetingLink = `${backendBase.replace(/\/$/, "")}/api/bookings/check-in/page?token=${encodeURIComponent(meetingToken)}`;
     await sendOwnerMeetingEmail({
       to: owner.email,
       ownerName: owner.name,

@@ -3,13 +3,19 @@ import nodemailer from "nodemailer";
 
 dotenv.config();
 
+const smtpHost = process.env.SMTP_HOST?.trim();
+const smtpPort = Number(process.env.SMTP_PORT || 587);
+const smtpSecure = process.env.SMTP_SECURE?.trim() === "true";
+const smtpUser = process.env.SMTP_USER?.trim();
+const smtpPass = process.env.SMTP_PASS?.trim();
+
 export const mailer = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT || 587),
-  secure: process.env.SMTP_SECURE === "true",
+  host: smtpHost,
+  port: smtpPort,
+  secure: smtpSecure,
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
+    user: smtpUser,
+    pass: smtpPass
   }
 });
 

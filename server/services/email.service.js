@@ -1,13 +1,18 @@
 import { mailer } from "../config/mailer.js";
 
 export const sendEmail = async ({ to, subject, html }) => {
-  if (!to || !process.env.SMTP_FROM) return;
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  const smtpFrom = process.env.SMTP_FROM?.trim() || process.env.SMTP_USER?.trim();
+  const smtpHost = process.env.SMTP_HOST?.trim();
+  const smtpUser = process.env.SMTP_USER?.trim();
+  const smtpPass = process.env.SMTP_PASS?.trim();
+
+  if (!to || !smtpFrom) return;
+  if (!smtpHost || !smtpUser || !smtpPass) {
     console.warn("SMTP is not fully configured. Skipping email send.");
     return;
   }
   try {
-    await mailer.sendMail({ from: process.env.SMTP_FROM, to, subject, html });
+    await mailer.sendMail({ from: smtpFrom, to, subject, html });
   } catch (error) {
     console.error("Email send failed:", error.message);
   }
