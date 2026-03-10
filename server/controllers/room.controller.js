@@ -73,6 +73,18 @@ export const getRoomAvailability = async (req, res, next) => {
   }
 };
 
+export const getPublicRoomList = async (req, res, next) => {
+  try {
+    const rooms = await Room.find({ isActive: true })
+      .select("roomNumber roomType capacity country branch block floor")
+      .sort({ roomNumber: 1 })
+      .lean();
+    res.json(rooms);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getActiveRoomBooking = async (req, res, next) => {
   try {
     const { roomNumber } = req.query;
