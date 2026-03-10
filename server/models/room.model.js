@@ -16,6 +16,7 @@ const roomSchema = new mongoose.Schema(
     imageUrl: { type: String, default: "", trim: true },
     amenities: { type: [String], default: [] },
     isActive: { type: Boolean, default: true },
+    isOccupied: { type: Boolean, default: false },
     secretCode: {
       type: String,
       default: () => String(Math.floor(100000 + Math.random() * 900000)),

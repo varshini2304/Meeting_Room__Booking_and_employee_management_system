@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import app from "./app.js";
 import { connectDB } from "./config/db.js";
-import { cancelNoShowBookings } from "./services/booking.service.js";
+import { cancelNoShowBookings, clearEndedMeetingsOccupancy } from "./services/booking.service.js";
 
 dotenv.config();
 
@@ -17,8 +17,12 @@ const start = async () => {
         if (cancelled > 0) {
           console.log(`Auto-cancelled ${cancelled} booking(s) due to no-show`);
         }
+        const freed = await clearEndedMeetingsOccupancy();
+        if (freed > 0) {
+          console.log(`Auto-cleared occupancy for ${freed} ended booking(s)`);
+        }
       } catch (error) {
-        console.error("No-show cancellation sweep failed", error.message);
+        console.error("Booking sweep failed", error.message);
       }
     }, 60 * 1000);
   } catch (error) {

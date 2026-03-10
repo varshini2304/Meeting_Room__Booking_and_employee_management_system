@@ -235,12 +235,18 @@ export const confirmRoomCheckIn = async (req, res, next) => {
       booking.status = "cancelled";
       booking.canceledAt = now;
       await booking.save();
+      room.isOccupied = false;
+      await room.save();
       return res.status(400).json({ message: "Check-in window has expired. Booking cancelled." });
     }
 
     if (!booking.occupancyConfirmedAt) {
       booking.occupancyConfirmedAt = now;
       await booking.save();
+    }
+    if (!room.isOccupied) {
+      room.isOccupied = true;
+      await room.save();
     }
 
     return res.json({

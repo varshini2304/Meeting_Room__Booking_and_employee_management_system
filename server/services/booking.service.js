@@ -205,6 +205,7 @@ export const confirmOccupancyByToken = async (token) => {
     booking.status = "cancelled";
     booking.canceledAt = now;
     await booking.save();
+    await Room.updateOne({ _id: booking.roomId }, { $set: { isOccupied: false } });
     const err = new Error("Check-in window has expired. Booking cancelled.");
     err.statusCode = 400;
     throw err;
@@ -212,18 +213,22 @@ export const confirmOccupancyByToken = async (token) => {
 
   booking.occupancyConfirmedAt = now;
   await booking.save();
+  await Room.updateOne({ _id: booking.roomId }, { $set: { isOccupied: true } });
   return booking;
 };
 
 export const cancelNoShowBookings = async () => {
   const now = new Date();
   const activeBookings = await Booking.find({ status: "booked", occupancyConfirmedAt: null })
-    .select("_id date startTime")
+    .select("_id roomId date startTime")
     .lean();
 
   const toCancelIds = activeBookings
     .filter((booking) => now > getCheckInCutoff(booking.date, booking.startTime))
     .map((booking) => booking._id);
+  const toCancelRoomIds = activeBookings
+    .filter((booking) => now > getCheckInCutoff(booking.date, booking.startTime))
+    .map((booking) => booking.roomId);
 
   if (!toCancelIds.length) return 0;
 
@@ -232,6 +237,29 @@ export const cancelNoShowBookings = async () => {
     { $set: { status: "cancelled", canceledAt: now } },
   );
 
+  if (toCancelRoomIds.length) {
+    await Room.updateMany({ _id: { $in: toCancelRoomIds } }, { $set: { isOccupied: false } });
+  }
+
+  return result.modifiedCount || 0;
+};
+
+export const clearEndedMeetingsOccupancy = async () => {
+  const now = new Date();
+  const activeBookings = await Booking.find({
+    status: "booked",
+    occupancyConfirmedAt: { $ne: null }
+  })
+    .select("_id roomId date endTime")
+    .lean();
+
+  const endedRoomIds = activeBookings
+    .filter((booking) => now > toDateTime(booking.date, booking.endTime))
+    .map((booking) => booking.roomId);
+
+  if (!endedRoomIds.length) return 0;
+
+  const result = await Room.updateMany({ _id: { $in: endedRoomIds } }, { $set: { isOccupied: false } });
   return result.modifiedCount || 0;
 };
 
