@@ -1,4 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
+import conferenceRoom from "./assets/conference-room.jpg";
+import "./index.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 const STORAGE_KEY = "roomDisplay:selectedRoom";
@@ -17,15 +19,6 @@ const formatDate = (value) => {
   if (!value) return "-";
   try {
     return new Date(value).toLocaleDateString();
-  } catch {
-    return value;
-  }
-};
-
-const formatDateTime = (value) => {
-  if (!value) return "-";
-  try {
-    return new Date(value).toLocaleString();
   } catch {
     return value;
   }
@@ -103,16 +96,37 @@ function App() {
     setView("select");
   };
 
-  const statusLabel = displayData?.booking ? "Booked" : "Available";
+  const statusLabel = displayData?.status === "upcoming"
+    ? "Upcoming"
+    : displayData?.booking
+      ? "Booked"
+      : "Available";
+  const bookingToShow = displayData?.booking || displayData?.nextBooking;
+  const bookingHeading = displayData?.booking
+    ? "Booking Details"
+    : displayData?.nextBooking
+      ? "Next Meeting"
+      : "Booking Details";
+  const upcomingList = displayData?.upcomingBookings || [];
 
   return (
-    <div className="app-shell">
-      <div className="bg-veil" />
-      <main className="page">
-        <header className="hero">
-          <div className="logo">TOYOTA</div>
-          <h1>Toyota Meeting Room Display</h1>
-          <p>Select the room this display belongs to.</p>
+    <div className="rooms-app">
+      <div className="rooms-bg">
+        <div className="bg-image left" style={{ backgroundImage: `url(${conferenceRoom})` }} />
+        <div className="bg-image right" style={{ backgroundImage: `url(${conferenceRoom})` }} />
+        <div className="bg-overlay" />
+      </div>
+
+      <main className="rooms-content">
+        <header className="brand">
+          <div className="logo-badge">
+            <div className="logo-ring">
+              <span>T</span>
+            </div>
+          </div>
+          <h1 className="brand-title">TOYOTA</h1>
+          <p className="brand-sub">Toyota Meeting Room Display</p>
+          <p className="brand-desc">Select the room this display belongs to.</p>
         </header>
 
         {view === "select" ? (
@@ -179,7 +193,7 @@ function App() {
                 <h2>Room Display</h2>
                 <p className="muted">Live status updates every 30 seconds.</p>
               </div>
-              <div className={`status ${displayData?.booking ? "booked" : "available"}`}>
+              <div className={`status ${displayData?.booking ? "booked" : displayData?.nextBooking ? "upcoming" : "available"}`}>
                 {statusLabel}
               </div>
             </div>
@@ -198,18 +212,40 @@ function App() {
                     <p><span>Location:</span> {displayData.room?.country}, {displayData.room?.branch}, {displayData.room?.block}, {displayData.room?.floor}</p>
                   </div>
                   <div className="panel">
-                    <h3>Booking Details</h3>
-                    {displayData.booking ? (
+                    <h3>{bookingHeading}</h3>
+                    {bookingToShow ? (
                       <>
-                        <p><span>Organizer:</span> {displayData.booking.owner?.name}</p>
-                        <p><span>Email:</span> {displayData.booking.owner?.email}</p>
-                        <p><span>Date:</span> {formatDate(displayData.booking.date)}</p>
-                        <p><span>Time:</span> {displayData.booking.startTime} - {displayData.booking.endTime}</p>
+                        <p><span>Organizer:</span> {bookingToShow.owner?.name}</p>
+                        <p><span>Email:</span> {bookingToShow.owner?.email}</p>
+                        <p><span>Date:</span> {formatDate(bookingToShow.date)}</p>
+                        <p><span>Time:</span> {bookingToShow.startTime} - {bookingToShow.endTime}</p>
                       </>
                     ) : (
-                      <p className="muted">No active booking for this room.</p>
+                      <p className="muted">No current or upcoming booking for this room.</p>
                     )}
                   </div>
+                </div>
+
+                <div className="panel upcoming">
+                  <h3>Upcoming Meetings</h3>
+                  {upcomingList.length === 0 ? (
+                    <p className="muted">No upcoming meetings scheduled.</p>
+                  ) : (
+                    <div className="upcoming-list">
+                      {upcomingList.map((item) => (
+                        <div key={item.id} className="upcoming-item">
+                          <div>
+                            <div className="upcoming-title">{item.owner?.name || "Organizer"}</div>
+                            <div className="upcoming-meta">{item.owner?.email || "-"}</div>
+                          </div>
+                          <div className="upcoming-time">
+                            <div>{formatDate(item.date)}</div>
+                            <div>{item.startTime} - {item.endTime}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="secret">
@@ -240,3 +276,4 @@ function App() {
 }
 
 export default App;
+

@@ -8,6 +8,11 @@ const bookingSchema = new mongoose.Schema(
     startTime: { type: String, required: true }, // HH:mm
     endTime: { type: String, required: true }, // HH:mm
     invitedMembers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    secretCode: {
+      type: String,
+      default: () => String(Math.floor(100000 + Math.random() * 900000)),
+      trim: true
+    },
     status: { type: String, enum: ["booked", "cancelled"], default: "booked" },
     occupancyConfirmedAt: { type: Date, default: null },
     canceledAt: { type: Date, default: null }

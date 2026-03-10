@@ -18,6 +18,12 @@ const ensureRoomSecretCode = async (room) => {
   await room.save();
   return room;
 };
+const ensureBookingSecretCode = async (booking) => {
+  if (booking.secretCode) return booking.secretCode;
+  const generated = String(Math.floor(100000 + Math.random() * 900000));
+  await Booking.updateOne({ _id: booking._id }, { $set: { secretCode: generated } });
+  return generated;
+};
 
 const buildRoomFilters = (query) => {
   const fields = ["country", "branch", "block", "floor", "roomNumber", "roomType"];
@@ -92,29 +98,54 @@ export const getActiveRoomBooking = async (req, res, next) => {
 
     let room = await Room.findOne({ roomNumber: String(roomNumber).trim(), isActive: true });
     if (!room) return res.status(404).json({ message: "Room not found" });
-    room = await ensureRoomSecretCode(room);
     const roomPayload = room.toObject();
 
     const now = new Date();
-    const booking = await Booking.findOne({ roomId: room._id, status: "booked" })
+    const bookings = await Booking.find({
+      roomId: room._id,
+      status: { $in: ["booked", "BOOKED", "checked_in", "CHECKED_IN"] }
+    })
+      .sort({ date: 1, startTime: 1 })
       .populate("ownerId", "name email employeeId")
       .lean();
 
-    if (!booking || !isWithinBookingWindow(booking, now)) {
-      return res.json({
-        room: {
-          roomNumber: roomPayload.roomNumber,
-          roomType: roomPayload.roomType,
-          capacity: roomPayload.capacity,
-          country: roomPayload.country,
-          branch: roomPayload.branch,
-          block: roomPayload.block,
-          floor: roomPayload.floor,
-        },
-        booking: null,
-        secretCode: roomPayload.secretCode
-      });
+    const mapBooking = (b) => ({
+      id: b._id,
+      date: b.date,
+      startTime: b.startTime,
+      endTime: b.endTime,
+      owner: b.ownerId
+        ? {
+            name: b.ownerId.name,
+            email: b.ownerId.email,
+            employeeId: b.ownerId.employeeId,
+          }
+        : null,
+    });
+
+    let activeBooking = null;
+    let nextBooking = null;
+    const upcomingBookings = [];
+
+    for (const b of bookings) {
+      const startAt = toDateTime(b.date, b.startTime);
+      const endAt = toDateTime(b.date, b.endTime);
+      if (now >= startAt && now <= endAt) {
+        activeBooking = b;
+      }
+      if (startAt > now) {
+        if (!nextBooking) {
+          nextBooking = b;
+        }
+        if (upcomingBookings.length < 3) {
+          upcomingBookings.push(b);
+        }
+      }
     }
+
+    const status = activeBooking ? "booked" : nextBooking ? "upcoming" : "available";
+    const activeSecret = activeBooking ? await ensureBookingSecretCode(activeBooking) : null;
+    const nextSecret = !activeBooking && nextBooking ? await ensureBookingSecretCode(nextBooking) : null;
 
     return res.json({
       room: {
@@ -126,20 +157,11 @@ export const getActiveRoomBooking = async (req, res, next) => {
         block: roomPayload.block,
         floor: roomPayload.floor,
       },
-      booking: {
-        id: booking._id,
-        date: booking.date,
-        startTime: booking.startTime,
-        endTime: booking.endTime,
-        owner: booking.ownerId
-          ? {
-              name: booking.ownerId.name,
-              email: booking.ownerId.email,
-              employeeId: booking.ownerId.employeeId,
-            }
-          : null,
-      },
-      secretCode: roomPayload.secretCode
+      booking: activeBooking ? mapBooking(activeBooking) : null,
+      nextBooking: !activeBooking && nextBooking ? mapBooking(nextBooking) : null,
+      upcomingBookings: upcomingBookings.map(mapBooking),
+      status,
+      secretCode: activeSecret || nextSecret
     });
   } catch (error) {
     return next(error);
@@ -154,7 +176,7 @@ export const revealRoomSecretCode = async (req, res, next) => {
       return res.status(400).json({ message: "roomNumber and email are required" });
     }
 
-    let room = await Room.findOne({
+    const room = await Room.findOne({
       roomNumber: String(roomNumber).trim(),
       isActive: true,
     });
@@ -184,10 +206,12 @@ export const revealRoomSecretCode = async (req, res, next) => {
       });
     }
 
+    const secretCode = await ensureBookingSecretCode(booking);
+
     return res.json({
       message: "Secret key fetched successfully",
       roomNumber: room.roomNumber,
-      secretCode: room.secretCode,
+      secretCode,
     });
   } catch (error) {
     return next(error);
@@ -202,19 +226,13 @@ export const confirmRoomCheckIn = async (req, res, next) => {
       return res.status(400).json({ message: "roomNumber, email and secretCode are required" });
     }
 
-    let room = await Room.findOne({
+    const room = await Room.findOne({
       roomNumber: String(roomNumber).trim(),
       isActive: true,
     });
 
     if (!room) {
       return res.status(404).json({ message: "Room not found" });
-    }
-
-    room = await ensureRoomSecretCode(room);
-
-    if (String(room.secretCode) !== String(secretCode).trim()) {
-      return res.status(403).json({ message: "Invalid secret code" });
     }
 
     const user = await User.findOne({
@@ -229,11 +247,16 @@ export const confirmRoomCheckIn = async (req, res, next) => {
     const booking = await Booking.findOne({
       ownerId: user._id,
       roomId: room._id,
-      status: "booked",
+      status: { $in: ["booked", "BOOKED"] },
     });
 
     if (!booking) {
       return res.status(403).json({ message: "No active booking found for this room" });
+    }
+
+    const bookingSecret = await ensureBookingSecretCode(booking);
+    if (String(bookingSecret) !== String(secretCode).trim()) {
+      return res.status(403).json({ message: "Invalid secret code" });
     }
 
     const startAt = toDateTime(booking.date, booking.startTime);
