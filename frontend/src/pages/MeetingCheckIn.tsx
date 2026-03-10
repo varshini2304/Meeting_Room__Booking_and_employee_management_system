@@ -2,6 +2,16 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { getCheckInDetailsApi, checkInWithTokenApi, type CheckInDetails } from "@/api/bookings";
+import { checkInRoomApi } from "@/api/rooms";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const MeetingCheckIn = () => {
   const [searchParams] = useSearchParams();
@@ -9,6 +19,8 @@ const MeetingCheckIn = () => {
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
+  const [isPromptOpen, setIsPromptOpen] = useState(false);
+  const [secretCode, setSecretCode] = useState("");
 
   const token = searchParams.get("token") || "";
 
@@ -35,11 +47,30 @@ const MeetingCheckIn = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
+  const openSecretPrompt = () => {
+    if (!details?.canCheckIn || details.status !== "booked") return;
+    setSecretCode("");
+    setError("");
+    setIsPromptOpen(true);
+  };
+
   const handleCheckIn = async () => {
     try {
       setIsCheckingIn(true);
+      if (!details?.room?.roomNumber || !details.owner?.email) {
+        throw new Error("Missing room or organizer details");
+      }
+      if (!secretCode.trim()) {
+        throw new Error("Secret code is required");
+      }
+      await checkInRoomApi({
+        roomNumber: details.room.roomNumber,
+        email: details.owner.email,
+        secretCode: secretCode.trim(),
+      });
       await checkInWithTokenApi(token);
       await load();
+      setIsPromptOpen(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Check-in failed");
     } finally {
@@ -67,14 +98,36 @@ const MeetingCheckIn = () => {
         </div>
 
         <div>
-          <Button onClick={handleCheckIn} disabled={!details.canCheckIn || isCheckingIn || details.status !== "booked"}>
+          <Button onClick={openSecretPrompt} disabled={!details.canCheckIn || isCheckingIn || details.status !== "booked"}>
             {details.occupancyConfirmedAt ? "Checked In" : isCheckingIn ? "Checking In..." : "Check In"}
           </Button>
         </div>
       </div>
+      <Dialog open={isPromptOpen} onOpenChange={(open) => !open && setIsPromptOpen(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enter Room Secret Code</DialogTitle>
+            <DialogDescription>
+              Enter the secret code displayed on the room screen to confirm check-in.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            value={secretCode}
+            onChange={(e) => setSecretCode(e.target.value)}
+            placeholder="Secret code"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsPromptOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCheckIn} disabled={isCheckingIn}>
+              {isCheckingIn ? "Checking In..." : "Confirm Check-In"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
 export default MeetingCheckIn;
-
