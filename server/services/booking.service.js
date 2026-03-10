@@ -38,6 +38,11 @@ export const createBooking = async ({ ownerId, roomId, date, startTime, invitedM
   ];
   const invitedUsersLookup = inviteClauses.length ? await User.find({ $or: inviteClauses }).lean() : [];
   const resolvedInvitedMemberIds = [...new Set(invitedUsersLookup.map((user) => String(user._id)))];
+  const resolvedEmails = invitedUsersLookup
+    .map((user) => user.email)
+    .filter(Boolean)
+    .map((email) => String(email).toLowerCase());
+  const extraInviteEmails = inviteEmails.filter((email) => !resolvedEmails.includes(email));
 
   const endTime = addThirtyMinutes(startTime);
   const booking = await Booking.create({
@@ -77,21 +82,26 @@ export const createBooking = async ({ ownerId, roomId, date, startTime, invitedM
     });
   }
 
-  if (room && invitedUsers.length) {
+  const participantEmailTargets = [
+    ...invitedUsers.map((user) => user.email).filter(Boolean),
+    ...extraInviteEmails
+  ];
+  const uniqueParticipantEmails = [...new Set(participantEmailTargets.map((email) => String(email).toLowerCase()))];
+
+  if (room && uniqueParticipantEmails.length) {
     await Promise.all(
-      invitedUsers
-        .filter((user) => Boolean(user.email))
-        .map((user) =>
-          sendParticipantRoomDetailsEmail({
-            to: user.email,
-            roomName: buildRoomLabel(room),
-            location: buildRoomLocation(room),
-            date,
-            startTime,
-            endTime,
-            organizerName: owner?.name || "Organizer",
-          }),
-        ),
+      uniqueParticipantEmails.map((email) =>
+        sendParticipantRoomDetailsEmail({
+          to: email,
+          organizerName: owner?.name || "Organizer",
+          organizerEmail: owner?.email || "-",
+          roomName: buildRoomLabel(room),
+          location: buildRoomLocation(room),
+          date,
+          startTime,
+          endTime,
+        }),
+      ),
     );
   }
 

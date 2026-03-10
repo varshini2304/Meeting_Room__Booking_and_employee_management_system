@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { InviteMembers } from "@/components/booking/InviteMembers";
 import type { Room } from "@/api/types";
 import { useCreateBooking } from "@/hooks/queries/useBookings";
 import { useToast } from "@/hooks/use-toast";
@@ -36,6 +37,7 @@ const ConfirmBooking = () => {
   const state = (location.state || null) as ConfirmBookingState | null;
   const [meetingTitle, setMeetingTitle] = useState("");
   const [notes, setNotes] = useState("");
+  const [invitedMembers, setInvitedMembers] = useState<string[]>(state?.invitedMembers || []);
 
   const endTime = useMemo(() => (state?.startTime ? addThirtyMinutes(state.startTime) : ""), [state?.startTime]);
 
@@ -56,7 +58,7 @@ const ConfirmBooking = () => {
         roomId: state.roomId,
         date: state.date,
         startTime: state.startTime,
-        invitedMembers: state.invitedMembers || [],
+        invitedMembers,
       });
       navigate(isManagerRoute ? "/manager/booking-success" : "/booking-success", {
         state: {
@@ -67,7 +69,7 @@ const ConfirmBooking = () => {
           endTime,
           meetingTitle,
           notes,
-          invitedMembers: state.invitedMembers || [],
+          invitedMembers,
         },
       });
     } catch (error) {
@@ -152,9 +154,9 @@ const ConfirmBooking = () => {
               </div>
               <div>
                 <p className="text-2xl font-semibold text-card-foreground mb-2">Invite Participants</p>
-                {state.invitedMembers?.length ? (
+                {invitedMembers.length ? (
                   <div className="flex flex-wrap gap-2">
-                    {state.invitedMembers.map((email) => (
+                    {invitedMembers.map((email) => (
                       <span key={email} className="rounded-lg border border-border bg-secondary/60 px-3 py-2 text-sm text-muted-foreground">
                         {email}
                       </span>
@@ -164,6 +166,7 @@ const ConfirmBooking = () => {
                   <p className="text-sm text-muted-foreground">No participants added.</p>
                 )}
               </div>
+              <InviteMembers initialMembers={invitedMembers} onMembersChange={setInvitedMembers} />
               <div>
                 <Textarea
                   value={notes}

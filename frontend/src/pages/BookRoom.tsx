@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { SlotSelector } from "@/components/booking/SlotSelector";
-import { InviteMembers } from "@/components/booking/InviteMembers";
 import { RoomCard } from "@/components/booking/RoomCard";
 import { useDayBookings } from "@/hooks/queries/useBookings";
 import { useRoomAvailability } from "@/hooks/queries/useRooms";
@@ -36,7 +35,6 @@ const getRoomImage = (room: Room) => {
 
 const BookRoom = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [invitedMembers, setInvitedMembers] = useState<string[]>([]);
   const [selectedTime, setSelectedTime] = useState<string>("");
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -80,7 +78,7 @@ const BookRoom = () => {
         room,
         date: dateStr,
         startTime: selectedTime,
-        invitedMembers,
+        invitedMembers: [],
       },
     });
   };
@@ -113,10 +111,7 @@ const BookRoom = () => {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="w-full lg:w-72 flex-shrink-0">
-          <InviteMembers initialMembers={[]} onMembersChange={setInvitedMembers} />
-        </div>
+      <div className="flex flex-col gap-4">
         <div className="flex-1">
           <h2 className="font-semibold text-foreground mb-3">
             {(date || new Date()).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}

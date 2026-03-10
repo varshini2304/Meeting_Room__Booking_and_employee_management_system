@@ -57,19 +57,20 @@ export const sendOwnerMeetingEmail = async ({
 
 export const sendParticipantRoomDetailsEmail = async ({
   to,
+  organizerName,
+  organizerEmail,
   roomName,
   location,
   date,
   startTime,
   endTime,
-  organizerName,
 }) =>
   sendEmail({
     to,
-    subject: "Toyota Meeting Room Details",
+    subject: "Toyota Meeting Venue Details",
     html: `
       <p>You are invited to a meeting.</p>
-      <p><b>Organizer:</b> ${organizerName || "-"}</p>
+      <p><b>Organizer:</b> ${organizerName || "-"} (${organizerEmail || "-"})</p>
       <p><b>Room:</b> ${roomName}</p>
       <p><b>Location:</b> ${location}</p>
       <p><b>Date:</b> ${date}</p>
