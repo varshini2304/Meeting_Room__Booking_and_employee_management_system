@@ -16,6 +16,11 @@ interface BookingSuccessState {
   invitedMembers: string[];
 }
 
+const toLocalDateFromKey = (value: string) => {
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(y, (m || 1) - 1, d || 1);
+};
+
 const BookingSuccess = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -60,7 +65,7 @@ const BookingSuccess = () => {
             <p className="text-xl"><span className="font-semibold">Room Name:</span> {state.room?.roomNumber || "-"}</p>
             <p className="text-xl"><span className="font-semibold">Room Type:</span> {state.room?.roomType || "-"}</p>
             <p className="text-xl"><span className="font-semibold">Location:</span> {state.room ? `${state.room.country} > ${state.room.branch} > ${state.room.block} > ${state.room.floor}` : "-"}</p>
-            <p className="text-xl"><span className="font-semibold">Date:</span> {new Date(state.date).toLocaleDateString()}</p>
+            <p className="text-xl"><span className="font-semibold">Date:</span> {toLocalDateFromKey(state.date).toLocaleDateString()}</p>
             <p className="text-xl"><span className="font-semibold">Time Slot:</span> {state.startTime} - {state.endTime}</p>
             <div className="flex items-center gap-2 text-xl">
               <span className="font-semibold">Booking ID:</span>

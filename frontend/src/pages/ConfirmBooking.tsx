@@ -22,6 +22,10 @@ const addThirtyMinutes = (time: string) => {
   const dt = new Date(2000, 0, 1, h, m + 30);
   return `${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`;
 };
+const toLocalDateFromKey = (value: string) => {
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(y, (m || 1) - 1, d || 1);
+};
 
 const ConfirmBooking = () => {
   const location = useLocation();
@@ -119,7 +123,7 @@ const ConfirmBooking = () => {
 
             <div className="rounded-xl border border-border p-5 space-y-3">
               <h3 className="text-3xl font-semibold text-card-foreground">Date and Time</h3>
-              <p className="text-2xl font-medium text-card-foreground">{new Date(state.date).toLocaleDateString()}</p>
+              <p className="text-2xl font-medium text-card-foreground">{toLocalDateFromKey(state.date).toLocaleDateString()}</p>
               <p className="text-lg text-muted-foreground flex items-center gap-2">
                 <Clock3 className="h-4 w-4" />
                 Start Time: {state.startTime}
@@ -174,7 +178,7 @@ const ConfirmBooking = () => {
               <p className="text-2xl font-semibold text-card-foreground">Meeting Details</p>
               <div className="rounded-lg border border-border p-3 text-base text-card-foreground flex items-center justify-between">
                 <span>Selected Date</span>
-                <span className="text-muted-foreground">{new Date(state.date).toLocaleDateString()}</span>
+                <span className="text-muted-foreground">{toLocalDateFromKey(state.date).toLocaleDateString()}</span>
               </div>
               <div className="rounded-lg border border-border p-3 text-base text-card-foreground flex items-center justify-between">
                 <span>Start Time</span>

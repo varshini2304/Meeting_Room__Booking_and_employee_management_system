@@ -15,6 +15,8 @@ import conferenceRoom from "@/assets/conference-room.jpg";
 import boardroom from "@/assets/boardroom.jpg";
 
 const pad = (value: number) => String(value).padStart(2, "0");
+const toLocalDateKey = (value: Date) =>
+  `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`;
 const generateTimeSlots = (startHour = 8, endHour = 20) => {
   const slots: string[] = [];
   for (let h = startHour; h < endHour; h += 1) {
@@ -41,7 +43,7 @@ const BookRoom = () => {
   const location = useLocation();
   const isManagerRoute = location.pathname.startsWith("/manager");
   const timeSlots = useMemo(() => generateTimeSlots(8, 20), []);
-  const dateStr = (date || new Date()).toISOString().slice(0, 10);
+  const dateStr = toLocalDateKey(date || new Date());
   const { data: dayBookings = [] } = useDayBookings(dateStr, Boolean(dateStr));
   const { data: rooms = [] } = useRoomAvailability({ date: dateStr, startTime: selectedTime }, Boolean(selectedTime));
 
@@ -117,7 +119,7 @@ const BookRoom = () => {
         </div>
         <div className="flex-1">
           <h2 className="font-semibold text-foreground mb-3">
-            {new Date(dateStr).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}
+            {(date || new Date()).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}
             {selectedTime ? ` at ${selectedTime}` : " (Select a time slot)"}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
