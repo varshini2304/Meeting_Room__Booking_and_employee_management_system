@@ -39,3 +39,16 @@ export const updateRoomApi = (id: string, payload: Partial<Room>) =>
     body: JSON.stringify(payload),
   });
 
+export interface RoomCheckInPayload {
+  roomNumber: string;
+  email: string;
+  secretCode: string;
+}
+
+export const checkInRoomApi = (payload: RoomCheckInPayload) =>
+  apiRequest<{ message: string; bookingId: string; occupancyConfirmedAt: string }>("/rooms/check-in", {
+    method: "POST",
+    body: JSON.stringify(payload),
+    auth: false,
+  });
+

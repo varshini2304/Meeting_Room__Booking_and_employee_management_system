@@ -15,7 +15,12 @@ const roomSchema = new mongoose.Schema(
     capacity: { type: Number, required: true, min: 1 },
     imageUrl: { type: String, default: "", trim: true },
     amenities: { type: [String], default: [] },
-    isActive: { type: Boolean, default: true }
+    isActive: { type: Boolean, default: true },
+    secretCode: {
+      type: String,
+      default: () => String(Math.floor(100000 + Math.random() * 900000)),
+      trim: true
+    }
   },
   { timestamps: true }
 );

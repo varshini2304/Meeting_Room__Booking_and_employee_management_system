@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBookingHistory } from "@/hooks/queries/useBookings";
 import type { Booking, Room } from "@/api/types";
+import { Input } from "@/components/ui/input";
 
 type HistoryStatus = "Completed" | "Cancelled";
 
@@ -28,8 +29,20 @@ const AvatarGroup = ({ count, extra }: { count: number; extra: number }) => (
   </div>
 );
 
+type DateRange = "last30" | "all";
+type StatusFilter = "all" | HistoryStatus;
+
+const defaultFilters = {
+  dateRange: "last30" as DateRange,
+  roomType: "all",
+  status: "all" as StatusFilter,
+  query: "",
+};
+
 const BookingHistory = () => {
   const { data: bookings = [] } = useBookingHistory();
+  const [pendingFilters, setPendingFilters] = useState(defaultFilters);
+  const [appliedFilters, setAppliedFilters] = useState(defaultFilters);
 
   const mapped = useMemo(() => {
     const now = new Date();
@@ -59,19 +72,101 @@ const BookingHistory = () => {
       });
   }, [bookings]);
 
+  const roomTypeOptions = useMemo(() => {
+    const types = mapped
+      .map((b) => b.meeting)
+      .filter((value) => Boolean(value && value.trim()))
+      .map((value) => value.trim());
+    return ["all", ...Array.from(new Set(types))];
+  }, [mapped]);
+
+  const filtered = useMemo(() => {
+    const now = new Date();
+    const cutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const query = appliedFilters.query.trim().toLowerCase();
+
+    return mapped.filter((b) => {
+      if (appliedFilters.status !== "all" && b.status !== appliedFilters.status) return false;
+      if (appliedFilters.roomType !== "all" && b.meeting !== appliedFilters.roomType) return false;
+      if (appliedFilters.dateRange === "last30") {
+        const bookingDate = new Date(`${b.date}T00:00:00`);
+        if (Number.isNaN(bookingDate.getTime()) || bookingDate < cutoff) return false;
+      }
+      if (query) {
+        const haystack = `${b.room} ${b.meeting}`.toLowerCase();
+        if (!haystack.includes(query)) return false;
+      }
+      return true;
+    });
+  }, [appliedFilters, mapped]);
+
   return (
     <>
       <h1 className="text-2xl font-bold text-foreground mb-6">Booking History</h1>
       <div className="bg-card rounded-xl border border-border shadow-sm p-5">
-        <div className="flex items-center gap-3 mb-6">
-          <button className="flex items-center gap-2 border border-border rounded-lg px-4 py-2 text-sm text-foreground">
-            <span>📅</span> Last 30 Days <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          </button>
-          <button className="flex items-center gap-2 border border-border rounded-lg px-4 py-2 text-sm text-foreground">
-            Room Type <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          </button>
-          <div className="ml-auto">
-            <Button className="rounded-full px-8">Filter</Button>
+        <div className="flex flex-wrap items-center gap-3 mb-6">
+          <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground">
+            <span>📅</span>
+            <select
+              className="bg-transparent outline-none"
+              value={pendingFilters.dateRange}
+              onChange={(e) =>
+                setPendingFilters((prev) => ({ ...prev, dateRange: e.target.value as DateRange }))
+              }
+            >
+              <option value="last30">Last 30 Days</option>
+              <option value="all">All Dates</option>
+            </select>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground">
+            <select
+              className="bg-transparent outline-none"
+              value={pendingFilters.roomType}
+              onChange={(e) => setPendingFilters((prev) => ({ ...prev, roomType: e.target.value }))}
+            >
+              {roomTypeOptions.map((type) => (
+                <option key={type} value={type}>
+                  {type === "all" ? "All Room Types" : type}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground">
+            <select
+              className="bg-transparent outline-none"
+              value={pendingFilters.status}
+              onChange={(e) =>
+                setPendingFilters((prev) => ({ ...prev, status: e.target.value as StatusFilter }))
+              }
+            >
+              <option value="all">All Statuses</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <Input
+            value={pendingFilters.query}
+            onChange={(e) => setPendingFilters((prev) => ({ ...prev, query: e.target.value }))}
+            placeholder="Search room or type"
+            className="w-full sm:w-56"
+          />
+          <div className="ml-auto flex items-center gap-2">
+            <Button className="rounded-full px-6" onClick={() => setAppliedFilters(pendingFilters)}>
+              Filter
+            </Button>
+            <Button
+              variant="outline"
+              className="rounded-full px-6"
+              onClick={() => {
+                setPendingFilters(defaultFilters);
+                setAppliedFilters(defaultFilters);
+              }}
+            >
+              Reset
+            </Button>
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -86,7 +181,7 @@ const BookingHistory = () => {
               </tr>
             </thead>
             <tbody>
-              {mapped.map((b) => (
+              {filtered.map((b) => (
                 <tr key={b.id} className="border-b border-border last:border-b-0">
                   <td className="py-4 pr-4">
                     <p className="font-semibold text-sm text-card-foreground">
@@ -104,7 +199,7 @@ const BookingHistory = () => {
                   </td>
                 </tr>
               ))}
-              {mapped.length === 0 && (
+              {filtered.length === 0 && (
                 <tr>
                   <td colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
                     No booking history yet.
