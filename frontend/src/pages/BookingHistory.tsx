@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, CalendarCheck, CheckCircle2, XCircle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBookingHistory } from "@/hooks/queries/useBookings";
 import type { Booking, Room } from "@/api/types";
@@ -100,12 +100,45 @@ const BookingHistory = () => {
     });
   }, [appliedFilters, mapped]);
 
+  const stats = useMemo(() => ({
+    total: mapped.length,
+    completed: mapped.filter((b) => b.status === "Completed").length,
+    cancelled: mapped.filter((b) => b.status === "Cancelled").length,
+    participants: mapped.reduce((s, b) => s + b.participants, 0),
+  }), [mapped]);
+
   return (
     <>
-      <h1 className="text-2xl font-bold text-foreground mb-6">Booking History</h1>
-      <div className="bg-card rounded-xl border border-border shadow-sm p-5">
+      <div className="rounded-3xl border border-border bg-gradient-to-br from-primary/5 via-background to-background p-6 mb-6">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Booking History</h1>
+            <p className="text-sm text-muted-foreground mt-1">Review past meetings and outcomes.</p>
+          </div>
+          <div className="flex gap-3 flex-wrap">
+            {[
+              { label: "Total", value: stats.total, icon: CalendarCheck, color: "text-primary", bg: "bg-primary/10" },
+              { label: "Completed", value: stats.completed, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
+              { label: "Cancelled", value: stats.cancelled, icon: XCircle, color: "text-red-600", bg: "bg-red-50" },
+              { label: "Participants", value: stats.participants, icon: Users, color: "text-sky-600", bg: "bg-sky-50" },
+            ].map((c) => (
+              <div key={c.label} className="bg-card rounded-xl border border-border px-4 py-3 flex items-center gap-3 shadow-sm">
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${c.bg}`}>
+                  <c.icon className={`h-4 w-4 ${c.color}`} />
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground">{c.label}</p>
+                  <p className="text-xl font-bold text-foreground">{c.value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-card rounded-2xl border border-border shadow-sm p-5">
         <div className="flex flex-wrap items-center gap-3 mb-6">
-          <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground">
+          <div className="flex items-center gap-2 border border-border rounded-xl px-3 py-2 text-sm text-foreground bg-background/60">
             <span>📅</span>
             <select
               className="bg-transparent outline-none appearance-none pr-6"
@@ -119,7 +152,7 @@ const BookingHistory = () => {
             </select>
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
           </div>
-          <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground">
+          <div className="flex items-center gap-2 border border-border rounded-xl px-3 py-2 text-sm text-foreground bg-background/60">
             <select
               className="bg-transparent outline-none appearance-none pr-6"
               value={pendingFilters.roomType}
@@ -133,7 +166,7 @@ const BookingHistory = () => {
             </select>
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
           </div>
-          <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground">
+          <div className="flex items-center gap-2 border border-border rounded-xl px-3 py-2 text-sm text-foreground bg-background/60">
             <select
               className="bg-transparent outline-none appearance-none pr-6"
               value={pendingFilters.status}
@@ -172,7 +205,7 @@ const BookingHistory = () => {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-border">
+              <tr className="border-b border-border bg-muted/20">
                 <th className="text-left text-sm font-medium text-muted-foreground py-3 pr-4">Room Name</th>
                 <th className="text-left text-sm font-medium text-muted-foreground py-3 pr-4">Date</th>
                 <th className="text-left text-sm font-medium text-muted-foreground py-3 pr-4">Time</th>
@@ -182,7 +215,7 @@ const BookingHistory = () => {
             </thead>
             <tbody>
               {filtered.map((b) => (
-                <tr key={b.id} className="border-b border-border last:border-b-0">
+                <tr key={b.id} className="border-b border-border last:border-b-0 hover:bg-muted/20 transition-colors">
                   <td className="py-4 pr-4">
                     <p className="font-semibold text-sm text-card-foreground">
                       {b.room} {b.meeting}

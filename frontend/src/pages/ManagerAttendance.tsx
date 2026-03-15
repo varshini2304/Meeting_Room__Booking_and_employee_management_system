@@ -256,9 +256,13 @@ const ManagerAttendance = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-foreground">Attendance Board</h1>
-        <div className="flex items-center gap-2">
+      <div className="rounded-3xl border border-border bg-gradient-to-br from-primary/5 via-background to-background p-6">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Attendance Board</h1>
+            <p className="text-sm text-muted-foreground mt-1">Monitor daily check-ins and corrections in real time.</p>
+          </div>
+          <div className="flex items-center gap-2">
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="gap-2 rounded-xl">
@@ -298,7 +302,7 @@ const ManagerAttendance = () => {
       {/* ── Summary cards ── */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {summaryCards.map((card) => (
-          <div key={card.label} className="bg-card rounded-xl border border-border p-4 flex items-center gap-3">
+          <div key={card.label} className="bg-card rounded-2xl border border-border p-4 flex items-center gap-3 shadow-sm">
             <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0", card.bg)}>
               <card.icon className={cn("h-4 w-4", card.color)} />
             </div>
@@ -328,7 +332,7 @@ const ManagerAttendance = () => {
                 key={s}
                 onClick={() => setStatusFilter(s)}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors capitalize",
+                  "px-3 py-1.5 rounded-full text-xs font-semibold transition-colors capitalize",
                   statusFilter === s
                     ? "bg-primary text-primary-foreground"
                     : "bg-secondary text-muted-foreground hover:text-foreground"
