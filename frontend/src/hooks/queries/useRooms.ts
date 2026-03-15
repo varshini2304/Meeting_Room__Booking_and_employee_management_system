@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createRoomApi, getRoomAvailabilityApi, getRoomsApi, updateRoomApi, type RoomFilters } from "@/api/rooms";
+import { createRoomApi, deleteRoomApi, getRoomAvailabilityApi, getRoomsApi, updateRoomApi, type RoomFilters } from "@/api/rooms";
 
 export const useRooms = (filters: RoomFilters = {}) =>
   useQuery({
@@ -28,6 +28,16 @@ export const useUpdateRoom = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: Parameters<typeof updateRoomApi>[1] }) => updateRoomApi(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
+    },
+  });
+};
+
+export const useDeleteRoom = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteRoomApi,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rooms"] });
     },

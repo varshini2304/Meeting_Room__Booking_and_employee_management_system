@@ -2,7 +2,7 @@ import { User } from "../models/user.model.js";
 
 export const createUserByManager = async (req, res, next) => {
   try {
-    const { employeeId, name, email, password, role, country, branch, block, floor } = req.body;
+    const { employeeId, name, email, password, role, country, branch, block, floor, gender } = req.body;
 
     if (!employeeId || !name || !email || !password) {
       return res.status(400).json({ message: "employeeId, name, email and password are required" });
@@ -17,6 +17,7 @@ export const createUserByManager = async (req, res, next) => {
       email: normalizedEmail,
       password: String(password),
       role: normalizedRole,
+      gender,
       country: country || "",
       branch: branch || "",
       block: block || "",
@@ -36,3 +37,18 @@ export const createUserByManager = async (req, res, next) => {
   }
 };
 
+export const listUsers = async (req, res, next) => {
+  try {
+    const { role, isActive } = req.query;
+    const query = {};
+    if (role) query.role = role;
+    if (isActive !== undefined) query.isActive = isActive === "true";
+    const users = await User.find(query)
+      .select("_id name email employeeId role department designation phone isActive gender")
+      .sort({ name: 1 })
+      .lean();
+    res.json(users);
+  } catch (error) {
+    next(error);
+  }
+};

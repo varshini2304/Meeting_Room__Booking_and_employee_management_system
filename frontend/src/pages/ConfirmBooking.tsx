@@ -38,6 +38,7 @@ const ConfirmBooking = () => {
   const [meetingTitle, setMeetingTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [invitedMembers, setInvitedMembers] = useState<string[]>(state?.invitedMembers || []);
+  const isSubmitting = createBooking.isPending;
 
   const endTime = useMemo(() => (state?.startTime ? addThirtyMinutes(state.startTime) : ""), [state?.startTime]);
 
@@ -84,6 +85,31 @@ const ConfirmBooking = () => {
   const room = state.room;
   return (
     <>
+      {isSubmitting && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="relative h-12 w-12">
+                <div className="absolute inset-0 rounded-full bg-primary/15 animate-ping" />
+                <div className="absolute inset-0 rounded-full border-2 border-primary/40" />
+                <div className="absolute inset-2 rounded-full bg-primary" />
+              </div>
+              <div>
+                <p className="text-lg font-semibold text-foreground">Confirming your booking</p>
+                <p className="text-sm text-muted-foreground">Locking the room and notifying participants…</p>
+              </div>
+            </div>
+            <div className="mt-4 h-2 rounded-full bg-muted overflow-hidden">
+              <div className="h-full w-2/3 bg-primary animate-pulse" />
+            </div>
+            <ul className="mt-4 text-sm text-muted-foreground space-y-1">
+              <li>• Reserving slot</li>
+              <li>• Creating meeting record</li>
+              <li>• Preparing email notifications</li>
+            </ul>
+          </div>
+        </div>
+      )}
       <h1 className="text-2xl font-bold text-foreground mb-6">Confirm Room Booking</h1>
       <div className="rounded-2xl border border-border bg-card/95 shadow-sm">
         <div className="px-6 py-4 border-b border-border">

@@ -1,6 +1,7 @@
 import { StatCard } from "@/components/StatCard";
 import { CalendarCheck, XCircle, CheckCircle, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useMemo, useState } from "react";
 import { useAllBookings } from "@/hooks/queries/useBookings";
 import type { Booking, Room, User } from "@/api/types";
 
@@ -15,24 +16,63 @@ const statusStyles: Record<BookingStatus, string> = {
 
 const AllBookings = () => {
   const { data: bookings = [] } = useAllBookings();
-  const mapped = bookings.map((b: Booking) => {
+  const [filters, setFilters] = useState({
+    dateRange: "all",
+    branch: "all",
+    room: "all",
+    employee: "all",
+  });
+
+  const mapped = useMemo(() => bookings.map((b: Booking) => {
     const room = b.roomId as Room;
     const owner = b.ownerId as User;
     const status = b.status === "cancelled" ? "Cancelled" : b.occupancyConfirmedAt ? "Occupied" : "Booked";
     return {
+      id: b._id,
       employee: owner?.name || "Employee",
       room: room?.roomNumber || "Room",
+      branch: room?.branch || "HQ",
       location: `${room?.branch || "HQ"} - ${room?.block || ""}, ${room?.floor || ""}`,
       date: b.date,
       time: `${b.startTime} - ${b.endTime}`,
       participants: b.invitedMembers?.length || 0,
       status: status as BookingStatus,
     };
-  });
+  }), [bookings]);
+
   const today = new Date().toISOString().slice(0, 10);
   const totalToday = mapped.filter((m) => m.date === today).length;
   const cancelled = mapped.filter((m) => m.status === "Cancelled").length;
   const active = mapped.filter((m) => m.status === "Booked" || m.status === "Occupied").length;
+
+  const options = useMemo(() => {
+    const branches = Array.from(new Set(mapped.map((b) => b.branch).filter(Boolean)));
+    const rooms = Array.from(new Set(mapped.map((b) => b.room).filter(Boolean)));
+    const employees = Array.from(new Set(mapped.map((b) => b.employee).filter(Boolean)));
+    return { branches, rooms, employees };
+  }, [mapped]);
+
+  const filtered = useMemo(() => {
+    return mapped.filter((b) => {
+      if (filters.branch !== "all" && b.branch !== filters.branch) return false;
+      if (filters.room !== "all" && b.room !== filters.room) return false;
+      if (filters.employee !== "all" && b.employee !== filters.employee) return false;
+
+      if (filters.dateRange !== "all") {
+        if (filters.dateRange === "today" && b.date !== today) return false;
+      }
+      return true;
+    });
+  }, [mapped, filters, today]);
+
+  const resetFilters = () => {
+    setFilters({
+      dateRange: "all",
+      branch: "all",
+      room: "all",
+      employee: "all",
+    });
+  };
 
   return (
     <>
@@ -46,20 +86,57 @@ const AllBookings = () => {
 
       <div className="bg-card rounded-xl border border-border p-5">
         <div className="flex items-center gap-3 mb-6 flex-wrap">
-          <button className="flex items-center gap-2 border border-border rounded-lg px-4 py-2 text-sm text-foreground">
-            📅 Apr 24, 2024 - Apr 30, 2024 <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          </button>
-          <button className="flex items-center gap-2 border border-border rounded-lg px-4 py-2 text-sm text-foreground">
-            All Branches <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          </button>
-          <button className="flex items-center gap-2 border border-border rounded-lg px-4 py-2 text-sm text-foreground">
-            All Rooms <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          </button>
-          <button className="flex items-center gap-2 border border-border rounded-lg px-4 py-2 text-sm text-foreground">
-            All Employees <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          </button>
+          <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground">
+            <span>📅</span>
+            <select
+              className="bg-transparent outline-none appearance-none"
+              value={filters.dateRange}
+              onChange={(e) => setFilters((prev) => ({ ...prev, dateRange: e.target.value }))}
+            >
+              <option value="all">All Dates</option>
+              <option value="today">Today</option>
+            </select>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </div>
+
+          <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground">
+            <select
+              className="bg-transparent outline-none appearance-none"
+              value={filters.branch}
+              onChange={(e) => setFilters((prev) => ({ ...prev, branch: e.target.value }))}
+            >
+              <option value="all">All Branches</option>
+              {options.branches.map((br) => <option key={br} value={br}>{br}</option>)}
+            </select>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </div>
+
+          <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground">
+            <select
+              className="bg-transparent outline-none appearance-none"
+              value={filters.room}
+              onChange={(e) => setFilters((prev) => ({ ...prev, room: e.target.value }))}
+            >
+              <option value="all">All Rooms</option>
+              {options.rooms.map((r) => <option key={r} value={r}>{r}</option>)}
+            </select>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </div>
+
+          <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground">
+            <select
+              className="bg-transparent outline-none appearance-none"
+              value={filters.employee}
+              onChange={(e) => setFilters((prev) => ({ ...prev, employee: e.target.value }))}
+            >
+              <option value="all">All Employees</option>
+              {options.employees.map((e) => <option key={e} value={e}>{e}</option>)}
+            </select>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </div>
+
           <div className="ml-auto">
-            <Button className="rounded-full px-8">Filter</Button>
+            <Button variant="outline" className="rounded-full px-6" onClick={resetFilters}>Reset</Button>
           </div>
         </div>
 
@@ -78,8 +155,8 @@ const AllBookings = () => {
               </tr>
             </thead>
             <tbody>
-              {mapped.map((b, i) => (
-                <tr key={i} className="border-b border-border last:border-b-0">
+              {filtered.map((b) => (
+                <tr key={b.id} className="border-b border-border last:border-b-0">
                   <td className="py-4 pr-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
@@ -101,16 +178,13 @@ const AllBookings = () => {
                   </td>
                 </tr>
               ))}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="py-8 text-center text-sm text-muted-foreground">No bookings found matching filters.</td>
+                </tr>
+              )}
             </tbody>
           </table>
-        </div>
-
-        <div className="flex items-center justify-end gap-2 mt-4 text-sm text-muted-foreground">
-          <span>1–10 of {mapped.length}</span>
-          <button className="p-1 rounded border border-border hover:bg-secondary"><ChevronLeft className="h-4 w-4" /></button>
-          <button className="w-8 h-8 rounded border border-primary bg-accent text-primary font-medium flex items-center justify-center">1</button>
-          <button className="text-sm text-primary hover:underline">Next</button>
-          <button className="p-1 rounded border border-border hover:bg-secondary"><ChevronRight className="h-4 w-4" /></button>
         </div>
       </div>
     </>

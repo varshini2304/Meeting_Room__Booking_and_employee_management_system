@@ -1,8 +1,9 @@
 import { RoomsTable } from "@/components/rooms/RoomsTable";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useRooms } from "@/hooks/queries/useRooms";
+import { useDeleteRoom, useRooms } from "@/hooks/queries/useRooms";
 import type { Room } from "@/api/types";
+import { useToast } from "@/hooks/use-toast";
 import roomA from "@/assets/room-a.jpg";
 import roomB from "@/assets/room-b.jpg";
 import conferenceRoom from "@/assets/conference-room.jpg";
@@ -20,6 +21,8 @@ const getRoomImage = (room: Room) => {
 const ManageRooms = () => {
   const navigate = useNavigate();
   const { data: rooms = [] } = useRooms();
+  const deleteRoom = useDeleteRoom();
+  const { toast } = useToast();
   const mapped = rooms.map((room) => ({
     id: room._id,
     name: room.roomNumber,
@@ -36,7 +39,25 @@ const ManageRooms = () => {
         <h1 className="text-2xl font-bold text-foreground">Manage Rooms</h1>
         <Button onClick={() => navigate("/manager/create-room")}>+ Add Room</Button>
       </div>
-      <RoomsTable rooms={mapped} onEdit={(id) => id && navigate(`/manager/create-room?edit=${id}`)} />
+      <RoomsTable
+        rooms={mapped}
+        onEdit={(id) => id && navigate(`/manager/create-room?edit=${id}`)}
+        onDelete={async (id) => {
+          if (!id) return;
+          const confirmed = window.confirm("Delete this room? This cannot be undone.");
+          if (!confirmed) return;
+          try {
+            await deleteRoom.mutateAsync(id);
+            toast({ title: "Room deleted", description: "The room has been removed." });
+          } catch (error) {
+            toast({
+              title: "Delete failed",
+              description: error instanceof Error ? error.message : "Unable to delete room",
+              variant: "destructive",
+            });
+          }
+        }}
+      />
     </>
   );
 };

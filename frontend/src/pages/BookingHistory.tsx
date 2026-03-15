@@ -108,7 +108,7 @@ const BookingHistory = () => {
           <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground">
             <span>📅</span>
             <select
-              className="bg-transparent outline-none"
+              className="bg-transparent outline-none appearance-none pr-6"
               value={pendingFilters.dateRange}
               onChange={(e) =>
                 setPendingFilters((prev) => ({ ...prev, dateRange: e.target.value as DateRange }))
@@ -121,7 +121,7 @@ const BookingHistory = () => {
           </div>
           <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground">
             <select
-              className="bg-transparent outline-none"
+              className="bg-transparent outline-none appearance-none pr-6"
               value={pendingFilters.roomType}
               onChange={(e) => setPendingFilters((prev) => ({ ...prev, roomType: e.target.value }))}
             >
@@ -135,7 +135,7 @@ const BookingHistory = () => {
           </div>
           <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground">
             <select
-              className="bg-transparent outline-none"
+              className="bg-transparent outline-none appearance-none pr-6"
               value={pendingFilters.status}
               onChange={(e) =>
                 setPendingFilters((prev) => ({ ...prev, status: e.target.value as StatusFilter }))

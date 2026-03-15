@@ -1,6 +1,7 @@
 import { StatCard } from "@/components/StatCard";
 import { CalendarCheck, XCircle, CheckCircle, ChevronDown, MapPin, Calendar, Wifi, Monitor, Projector } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useMemo, useState } from "react";
 import { useAllBookings } from "@/hooks/queries/useBookings";
 import { useRoomAvailability } from "@/hooks/queries/useRooms";
@@ -31,25 +32,42 @@ const heatmapHours = ["9am", "10am", "11am", "12am", "1pm", "2pm", "3pm", "4pm",
 const heatmapDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
 const RoomAvailability = () => {
-  const [selectedDate] = useState(new Date().toISOString().slice(0, 10));
-  const [selectedTime] = useState("10:00");
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [time, setTime] = useState("10:00");
+  const [filters, setFilters] = useState({
+    branch: "all",
+    status: "all",
+  });
+
   const { data: allBookings = [] } = useAllBookings();
-  const { data: rooms = [] } = useRoomAvailability({ date: selectedDate, startTime: selectedTime }, true);
-  const totalToday = allBookings.filter((b) => b.date === selectedDate).length;
+  const { data: rooms = [] } = useRoomAvailability({ date, startTime: time }, true);
+
+  const totalToday = allBookings.filter((b) => b.date === date).length;
   const cancelled = allBookings.filter((b) => b.status === "cancelled").length;
   const active = allBookings.filter((b) => b.status === "booked").length;
 
+  const options = useMemo(() => {
+    const branches = Array.from(new Set(rooms.map((r) => r.branch).filter(Boolean)));
+    return { branches };
+  }, [rooms]);
+
   const uiRooms = useMemo(
-    () =>
-      rooms.map((room) => ({
+    () => rooms
+      .map((room) => ({
         name: room.roomNumber,
         type: room.roomType,
         image: getRoomImage(room),
+        branch: room.branch,
         location: `${room.branch} - ${room.block} - ${room.floor}`,
         status: room.isActive ? (room.isAvailable === false ? "Booked" : "Available") : "Under Maintenance",
-        date: selectedDate,
-      })),
-    [rooms, selectedDate],
+        date: date,
+      }))
+      .filter((r) => {
+        if (filters.branch !== "all" && r.branch !== filters.branch) return false;
+        if (filters.status !== "all" && r.status !== filters.status) return false;
+        return true;
+      }),
+    [rooms, date, filters],
   );
 
   return (
@@ -63,23 +81,48 @@ const RoomAvailability = () => {
       </div>
 
       <div className="flex items-center gap-3 mb-6 flex-wrap">
-        <button className="flex items-center gap-2 border border-border rounded-lg px-4 py-2 text-sm text-foreground bg-card">
-          📅 Apr 24, 2024 - Apr 30, 2024 <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        </button>
-        <button className="flex items-center gap-2 border border-border rounded-lg px-4 py-2 text-sm text-foreground bg-card">
-          All Branches <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        </button>
-        <button className="flex items-center gap-2 border border-border rounded-lg px-4 py-2 text-sm text-foreground bg-card">
-          All Rooms <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        </button>
-        <button className="flex items-center gap-2 border border-border rounded-lg px-4 py-2 text-sm text-foreground bg-card">
-          All Employees <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        </button>
-        <button className="flex items-center gap-2 border border-border rounded-lg px-4 py-2 text-sm text-foreground bg-card">
-          Status <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        </button>
+        <div className="flex items-center gap-2">
+          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-auto bg-card" />
+          <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="w-auto bg-card" />
+        </div>
+
+        <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-card">
+          <select
+            className="bg-transparent outline-none appearance-none"
+            value={filters.branch}
+            onChange={(e) => setFilters((prev) => ({ ...prev, branch: e.target.value }))}
+          >
+            <option value="all">All Branches</option>
+            {options.branches.map((br) => <option key={br} value={br}>{br}</option>)}
+          </select>
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        </div>
+
+        <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-card">
+          <select
+            className="bg-transparent outline-none appearance-none"
+            value={filters.status}
+            onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
+          >
+            <option value="all">All Statuses</option>
+            <option value="Available">Available</option>
+            <option value="Booked">Booked</option>
+          </select>
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        </div>
+
         <div className="ml-auto">
-          <Button className="rounded-full px-8">Filter</Button>
+          <Button
+            variant="outline"
+            className="rounded-full px-8"
+            onClick={() => {
+              setFilters({ branch: "all", status: "all" });
+              setDate(new Date().toISOString().slice(0, 10));
+              setTime("10:00");
+            }}
+          >
+            Reset
+          </Button>
         </div>
       </div>
 

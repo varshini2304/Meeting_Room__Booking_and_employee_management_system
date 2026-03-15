@@ -1,6 +1,6 @@
 import { getMeApi } from "@/api/auth";
 import { apiRequest } from "@/api/client";
-import type { User, UserRole } from "@/api/types";
+import type { Gender, User, UserRole } from "@/api/types";
 
 export const getProfileApi = getMeApi;
 
@@ -10,6 +10,7 @@ export interface CreateUserPayload {
   email: string;
   password: string;
   role: UserRole;
+  gender?: Gender;
   country?: string;
   branch?: string;
   block?: string;

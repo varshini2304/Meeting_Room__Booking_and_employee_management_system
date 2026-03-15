@@ -61,6 +61,18 @@ const BookRoom = () => {
     return summary;
   }, [dayBookings]);
 
+  const disabledSlots = useMemo(() => {
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
+    if (dateStr !== todayStr) return [];
+    const nowMinutes = today.getHours() * 60 + today.getMinutes();
+    return timeSlots.filter((slot) => {
+      const [h, m] = slot.split(":").map(Number);
+      const slotMinutes = h * 60 + m;
+      return slotMinutes < nowMinutes;
+    });
+  }, [dateStr, timeSlots]);
+
   const handleBook = (roomId?: string) => {
     if (!roomId) return;
     if (!selectedTime || !dateStr) {
@@ -96,17 +108,19 @@ const BookRoom = () => {
               selected={date}
               onSelect={setDate}
               className="rounded-lg border border-border"
+              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
             />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-card-foreground mb-2">Select Time Slot</h3>
-            <SlotSelector
-              timeSlots={timeSlots}
-              bookedSlots={bookedSlots}
-              slotSummary={slotSummary}
-              selectedTime={selectedTime}
-              onSelectTime={setSelectedTime}
-            />
+          <SlotSelector
+            timeSlots={timeSlots}
+            bookedSlots={bookedSlots}
+            disabledSlots={disabledSlots}
+            slotSummary={slotSummary}
+            selectedTime={selectedTime}
+            onSelectTime={setSelectedTime}
+          />
           </div>
         </div>
       </div>

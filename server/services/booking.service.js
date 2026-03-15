@@ -12,6 +12,7 @@ const getCheckInCutoff = (date, startTime) => {
   const start = toDateTime(date, startTime);
   return new Date(start.getTime() + 10 * 60 * 1000);
 };
+
 const getBackendBase = () =>
   process.env.BACKEND_URL || process.env.SERVER_URL || `http://localhost:${process.env.PORT || 5000}`;
 
@@ -65,8 +66,8 @@ export const createBooking = async ({ ownerId, roomId, date, startTime, invitedM
       bookingId: String(booking._id),
       ownerId: String(ownerId),
     });
-    const backendBase = getBackendBase();
-    const meetingLink = `${backendBase.replace(/\/$/, "")}/api/bookings/check-in/page?token=${encodeURIComponent(meetingToken)}`;
+    const clientBase = process.env.CLIENT_URL || "http://localhost:5173";
+    const meetingLink = `${clientBase.replace(/\/$/, "")}/meeting-check-in?token=${encodeURIComponent(meetingToken)}`;
     await sendOwnerMeetingEmail({
       to: owner.email,
       ownerName: owner.name,
@@ -263,13 +264,19 @@ export const clearEndedMeetingsOccupancy = async () => {
     .select("_id roomId date endTime")
     .lean();
 
-  const endedRoomIds = activeBookings
-    .filter((booking) => now > toDateTime(booking.date, booking.endTime))
-    .map((booking) => booking.roomId);
+  const endedBookings = activeBookings.filter((booking) => now > toDateTime(booking.date, booking.endTime));
 
-  if (!endedRoomIds.length) return 0;
+  if (!endedBookings.length) return 0;
 
-  const result = await Room.updateMany({ _id: { $in: endedRoomIds } }, { $set: { isOccupied: false } });
+  const endedBookingIds = endedBookings.map((b) => b._id);
+  const endedRoomIds = endedBookings.map((b) => b.roomId);
+
+  await Room.updateMany({ _id: { $in: endedRoomIds } }, { $set: { isOccupied: false } });
+
+  const result = await Booking.updateMany(
+    { _id: { $in: endedBookingIds } },
+    { $set: { status: "completed" } },
+  );
+
   return result.modifiedCount || 0;
 };
-

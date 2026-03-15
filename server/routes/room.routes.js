@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   confirmRoomCheckIn,
   createRoom,
+  deleteRoom,
   editRoom,
   getActiveRoomBooking,
   getRoomAvailability,
@@ -16,6 +17,7 @@ const router = Router();
 
 router.post("/", protect, authorize("manager"), createRoom);
 router.put("/:id", protect, authorize("manager"), editRoom);
+router.delete("/:id", protect, authorize("manager"), deleteRoom);
 router.get("/public", getPublicRoomList);
 router.get("/", protect, getRooms);
 router.get("/availability", protect, getRoomAvailability);
@@ -24,4 +26,3 @@ router.post("/reveal-secret", revealRoomSecretCode);
 router.post("/check-in", confirmRoomCheckIn);
 
 export default router;
-

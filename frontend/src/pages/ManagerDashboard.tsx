@@ -14,7 +14,7 @@ import { useRooms } from "@/hooks/queries/useRooms";
 import { useCreateUser } from "@/hooks/queries/useUsers";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import type { UserRole } from "@/api/types";
+import type { Gender, UserRole } from "@/api/types";
 
 const chartConfig = {
   meetings: { label: "Meetings", color: "hsl(211 100% 50%)" },
@@ -27,6 +27,7 @@ type NewUserFormValues = {
   email: string;
   password: string;
   role: UserRole;
+  gender: Gender;
   country: string;
   branch: string;
   block: string;
@@ -39,6 +40,7 @@ const initialFormValues: NewUserFormValues = {
   email: "",
   password: "",
   role: "employee",
+  gender: "unspecified",
   country: "",
   branch: "",
   block: "",
@@ -73,6 +75,7 @@ const ManagerDashboard = () => {
         email: form.email.trim().toLowerCase(),
         password: form.password,
         role: form.role,
+        gender: form.gender,
         country: form.country.trim(),
         branch: form.branch.trim(),
         block: form.block.trim(),
@@ -169,6 +172,20 @@ const ManagerDashboard = () => {
                 <SelectContent>
                   <SelectItem value="employee">Employee</SelectItem>
                   <SelectItem value="manager">Manager</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Gender</Label>
+              <Select value={form.gender} onValueChange={(value) => setForm((prev) => ({ ...prev, gender: value as Gender }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="unspecified">Prefer not to say</SelectItem>
                 </SelectContent>
               </Select>
             </div>

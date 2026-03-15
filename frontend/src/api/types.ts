@@ -1,4 +1,5 @@
 export type UserRole = "employee" | "manager";
+export type Gender = "female" | "male" | "other" | "unspecified";
 
 export interface User {
   _id: string;
@@ -6,6 +7,7 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
+  gender?: Gender;
   country?: string;
   branch?: string;
   block?: string;

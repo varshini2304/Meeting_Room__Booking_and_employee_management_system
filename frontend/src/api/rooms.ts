@@ -39,6 +39,11 @@ export const updateRoomApi = (id: string, payload: Partial<Room>) =>
     body: JSON.stringify(payload),
   });
 
+export const deleteRoomApi = (id: string) =>
+  apiRequest<void>(`/rooms/${id}`, {
+    method: "DELETE",
+  });
+
 export interface RoomCheckInPayload {
   roomNumber: string;
   email: string;

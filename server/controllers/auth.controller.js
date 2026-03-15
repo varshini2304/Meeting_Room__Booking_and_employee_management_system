@@ -3,7 +3,7 @@ import { signToken } from "../config/jwt.js";
 
 export const register = async (req, res, next) => {
   try {
-    const { employeeId, name, email, password, role, country, branch, block, floor } = req.body;
+    const { employeeId, name, email, password, role, country, branch, block, floor, gender } = req.body;
     const normalizedEmail = String(email || "").trim().toLowerCase();
     const fallbackName = normalizedEmail.split("@")[0] || "employee";
     const fallbackEmployeeId = `EMP-${Date.now().toString().slice(-6)}`;
@@ -13,6 +13,7 @@ export const register = async (req, res, next) => {
       email: normalizedEmail,
       password,
       role: role || "employee",
+      gender,
       country,
       branch,
       block,

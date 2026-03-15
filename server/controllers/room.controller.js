@@ -55,6 +55,16 @@ export const editRoom = async (req, res, next) => {
   }
 };
 
+export const deleteRoom = async (req, res, next) => {
+  try {
+    const room = await Room.findByIdAndDelete(req.params.id);
+    if (!room) return res.status(404).json({ message: "Room not found" });
+    return res.status(204).send();
+  } catch (error) {
+    return next(error);
+  }
+};
+
 export const getRooms = async (req, res, next) => {
   try {
     const rooms = await Room.find(buildRoomFilters(req.query)).sort({ createdAt: -1 });

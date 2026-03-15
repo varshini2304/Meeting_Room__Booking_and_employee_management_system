@@ -1,18 +1,21 @@
 interface SlotSelectorProps {
   timeSlots: string[];
   bookedSlots?: string[];
+  disabledSlots?: string[];
   selectedTime?: string;
   onSelectTime?: (time: string) => void;
   slotSummary?: Record<string, { count: number; rooms: string[] }>;
 }
 
-export function SlotSelector({ timeSlots, bookedSlots = [], selectedTime, onSelectTime, slotSummary = {} }: SlotSelectorProps) {
+export function SlotSelector({ timeSlots, bookedSlots = [], disabledSlots = [], selectedTime, onSelectTime, slotSummary = {} }: SlotSelectorProps) {
   const bookedSet = new Set(bookedSlots);
+  const disabledSet = new Set(disabledSlots);
   return (
     <div className="w-full overflow-x-auto">
       <div className="grid grid-flow-col auto-cols-[110px] gap-2 pb-1 min-w-max">
         {timeSlots.map((slot) => {
           const isBooked = bookedSet.has(slot);
+          const isDisabled = disabledSet.has(slot);
           const isSelected = selectedTime === slot;
           const summary = slotSummary[slot];
           return (
@@ -24,9 +27,12 @@ export function SlotSelector({ timeSlots, bookedSlots = [], selectedTime, onSele
                   ? "border-primary bg-primary/10"
                   : isBooked
                     ? "border-destructive/30 bg-destructive/10 hover:bg-destructive/15"
-                    : "border-border bg-accent/40 hover:bg-accent/60"
+                    : isDisabled
+                      ? "border-border bg-muted/50 text-muted-foreground"
+                      : "border-border bg-accent/40 hover:bg-accent/60"
               }`}
-              onClick={() => onSelectTime?.(slot)}
+              onClick={() => !isDisabled && onSelectTime?.(slot)}
+              disabled={isDisabled}
             >
               <div className="flex h-full flex-col items-center justify-center gap-1">
                 <p className="text-xs font-medium text-card-foreground">{slot}</p>

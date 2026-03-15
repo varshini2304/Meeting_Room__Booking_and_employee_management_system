@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, DoorOpen, ClipboardList, Bell, User, History,
-  PlusCircle, Settings, MapPin, LogOut, CalendarCheck
+  PlusCircle, Settings, MapPin, LogOut, CalendarCheck, ClipboardCheck, CalendarOff
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -21,6 +21,8 @@ const userItems = [
   { title: "Book Room", url: "/book-room", icon: DoorOpen },
   { title: "Manage Bookings", url: "/manage-bookings", icon: ClipboardList },
   { title: "Booking History", url: "/booking-history", icon: History },
+  { title: "My Attendance", url: "/attendance", icon: ClipboardCheck },
+  { title: "My Leaves", url: "/leaves", icon: CalendarOff },
   { title: "Notifications", url: "/notifications", icon: Bell },
   { title: "Profile", url: "/profile", icon: User },
 ];
@@ -29,6 +31,9 @@ const managerItems = [
   { title: "Book Room", url: "/manager/book-room", icon: DoorOpen },
   { title: "Manage My Bookings", url: "/manager/my-bookings", icon: ClipboardList },
   { title: "Booking History", url: "/manager/booking-history", icon: History },
+  { title: "Attendance Board", url: "/manager/attendance", icon: ClipboardCheck },
+  { title: "My Attendance", url: "/manager/my-attendance", icon: ClipboardCheck },
+  { title: "Leave Requests", url: "/manager/leaves", icon: CalendarOff },
   { title: "Create Room", url: "/manager/create-room", icon: PlusCircle },
   { title: "Manage Rooms", url: "/manager/manage-rooms", icon: Settings },
   { title: "All Bookings", url: "/manager/all-bookings", icon: CalendarCheck },

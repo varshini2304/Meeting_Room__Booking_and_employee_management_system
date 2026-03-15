@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { getCheckInDetailsApi, checkInWithTokenApi, type CheckInDetails } from "@/api/bookings";
-import { checkInRoomApi } from "@/api/rooms";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -63,12 +62,8 @@ const MeetingCheckIn = () => {
       if (!secretCode.trim()) {
         throw new Error("Secret code is required");
       }
-      await checkInRoomApi({
-        roomNumber: details.room.roomNumber,
-        email: details.owner.email,
-        secretCode: secretCode.trim(),
-      });
-      await checkInWithTokenApi(token);
+      // Pass secretCode to token API to verify presence without requiring user auth
+      await checkInWithTokenApi(token, secretCode.trim());
       await load();
       setIsPromptOpen(false);
     } catch (e) {

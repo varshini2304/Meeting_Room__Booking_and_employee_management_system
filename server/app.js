@@ -7,6 +7,8 @@ import roomRoutes from "./routes/room.routes.js";
 import bookingRoutes from "./routes/booking.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import attendanceRoutes from "./routes/attendance.routes.js";
+import leaveRoutes from "./routes/leave.routes.js";
 import { errorHandler, notFound } from "./middlewares/error.middleware.js";
 
 dotenv.config();
@@ -61,6 +63,8 @@ app.use("/api/rooms", roomRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/attendance", attendanceRoutes);
+app.use("/api/leaves", leaveRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
