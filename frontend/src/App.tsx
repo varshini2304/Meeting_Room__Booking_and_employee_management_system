@@ -18,6 +18,7 @@ import Attendance from "./pages/Attendance";
 import ManagerAttendance from "./pages/ManagerAttendance";
 import MyLeaves from "./pages/MyLeaves";
 import ManagerLeaves from "./pages/ManagerLeaves";
+import ManagerLeaveBalances from "./pages/ManagerLeaveBalances";
 import CreateRoom from "./pages/CreateRoom";
 import ManageRooms from "./pages/ManageRooms";
 import AllBookings from "./pages/AllBookings";
@@ -79,6 +80,7 @@ const AppRoutes = () => (
       <Route path="attendance" element={<ManagerAttendance />} />
       <Route path="my-attendance" element={<Attendance />} />
       <Route path="leaves" element={<ManagerLeaves />} />
+      <Route path="leaves/balances" element={<ManagerLeaveBalances />} />
       <Route path="create-room" element={<CreateRoom />} />
       <Route path="manage-rooms" element={<ManageRooms />} />
       <Route path="all-bookings" element={<AllBookings />} />

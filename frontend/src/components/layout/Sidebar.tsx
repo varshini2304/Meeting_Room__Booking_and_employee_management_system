@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, DoorOpen, ClipboardList, Bell, User, History,
-  PlusCircle, Settings, MapPin, LogOut, CalendarCheck, ClipboardCheck, CalendarOff
+  PlusCircle, Settings, MapPin, LogOut, CalendarCheck, ClipboardCheck, CalendarOff, BarChart3
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -34,6 +34,7 @@ const managerItems = [
   { title: "Attendance Board", url: "/manager/attendance", icon: ClipboardCheck },
   { title: "My Attendance", url: "/manager/my-attendance", icon: ClipboardCheck },
   { title: "Leave Requests", url: "/manager/leaves", icon: CalendarOff },
+  { title: "Leave Balances", url: "/manager/leaves/balances", icon: BarChart3 },
   { title: "Create Room", url: "/manager/create-room", icon: PlusCircle },
   { title: "Manage Rooms", url: "/manager/manage-rooms", icon: Settings },
   { title: "All Bookings", url: "/manager/all-bookings", icon: CalendarCheck },
@@ -61,12 +62,20 @@ export function SidebarNav({ variant = "user" }: SidebarNavProps) {
     : userItems;
 
   return (
-    <Sidebar collapsible="icon" className="border-r-0">
-      <div className="p-4 pb-6 flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-          <span className="text-xs font-bold text-muted-foreground">T</span>
+    <Sidebar
+      collapsible="icon"
+      className="border-r border-border bg-gradient-to-b from-slate-50 via-white to-slate-50 text-foreground"
+    >
+      <div className="p-4 pb-6 flex items-center gap-3">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center shadow-sm">
+          <span className="text-xs font-extrabold text-white">T</span>
         </div>
-        {!collapsed && <span className="text-lg font-bold text-primary">TOYOTA</span>}
+        {!collapsed && (
+          <div className="leading-tight">
+            <span className="text-lg font-extrabold tracking-wide text-slate-900">TOYOTA</span>
+            <div className="text-[10px] text-slate-500">Room Booking</div>
+          </div>
+        )}
       </div>
       <SidebarContent>
         <SidebarGroup>
@@ -80,14 +89,20 @@ export function SidebarNav({ variant = "user" }: SidebarNavProps) {
                       <NavLink
                         to={item.url}
                         end
-                        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                        className={`group flex items-center gap-3 px-3 py-2 rounded-xl transition-all ${
                           isActive
-                            ? "bg-primary text-primary-foreground"
-                            : "text-sidebar-foreground hover:bg-sidebar-accent"
+                            ? "bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-sm"
+                            : "text-slate-700 hover:bg-slate-100"
                         }`}
                         activeClassName=""
                       >
-                        <item.icon className="h-5 w-5" />
+                        <span
+                          className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+                            isActive ? "bg-white/20" : "bg-slate-100 group-hover:bg-slate-200"
+                          }`}
+                        >
+                          <item.icon className={`h-4.5 w-4.5 ${isActive ? "text-white" : "text-slate-600"}`} />
+                        </span>
                         {!collapsed && <span className="font-medium">{item.title}</span>}
                       </NavLink>
                     </SidebarMenuButton>
@@ -101,13 +116,15 @@ export function SidebarNav({ variant = "user" }: SidebarNavProps) {
       {!collapsed && (
         <div className="mt-auto p-4">
           <button
-            className="flex items-center gap-2 text-destructive font-medium px-3 py-2"
+            className="flex items-center gap-2 text-red-600 hover:text-red-700 font-medium px-3 py-2 rounded-xl hover:bg-red-50 transition-colors"
             onClick={async () => {
               await logout();
               navigate("/login", { replace: true });
             }}
           >
-            <LogOut className="h-5 w-5" />
+            <span className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center">
+              <LogOut className="h-4 w-4 text-red-600" />
+            </span>
             <span>Logout</span>
           </button>
         </div>

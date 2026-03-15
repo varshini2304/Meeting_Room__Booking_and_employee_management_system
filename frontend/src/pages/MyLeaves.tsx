@@ -168,7 +168,17 @@ function TeamCalendar({ month, year }: { month: number; year: number }) {
 
 // ─── Apply Form Dialog ────────────────────────────────────────────────────────
 
-function ApplyDialog({ open, onClose, allowedTypes }: { open: boolean; onClose: () => void; allowedTypes: LeaveType[] }) {
+function ApplyDialog({
+  open,
+  onClose,
+  allowedTypes,
+  balance,
+}: {
+  open: boolean;
+  onClose: () => void;
+  allowedTypes: LeaveType[];
+  balance?: Record<string, { total: number; used: number; pending: number; remaining: number }> | null;
+}) {
   const applyLeave = useApplyLeave();
   const { toast } = useToast();
   const today = new Date().toISOString().slice(0, 10);
@@ -187,9 +197,18 @@ function ApplyDialog({ open, onClose, allowedTypes }: { open: boolean; onClose: 
 
   const set = (k: string, v: unknown) => setForm(prev => ({ ...prev, [k]: v }));
 
+  const getRemaining = (type: LeaveType) => {
+    if (!balance?.[type]) return LEAVE_META[type].defaultDays;
+    return balance[type].remaining;
+  };
+
   const handleSubmit = async () => {
     if (!form.reason.trim()) {
       toast({ title: "Reason required", description: "Please describe your reason for this leave.", variant: "destructive" });
+      return;
+    }
+    if (form.leaveType !== "unpaid" && getRemaining(form.leaveType) <= 0) {
+      toast({ title: "No balance left", description: "You have reached the limit for this leave type.", variant: "destructive" });
       return;
     }
     try {
@@ -216,20 +235,25 @@ function ApplyDialog({ open, onClose, allowedTypes }: { open: boolean; onClose: 
               {allowedTypes.map(type => {
                 const meta = LEAVE_META[type];
                 const Icon = meta.icon;
+                const remaining = type === "unpaid" ? 1 : getRemaining(type);
+                const isDisabled = type !== "unpaid" && remaining <= 0;
                 return (
                   <button
                     key={type}
                     type="button"
                     onClick={() => set("leaveType", type)}
+                    disabled={isDisabled}
                     className={cn(
                       "flex flex-col items-center gap-1.5 p-3 rounded-xl border text-xs font-semibold transition-all",
                       form.leaveType === type
                         ? cn(meta.bg, meta.border, meta.color, "shadow-sm")
-                        : "border-border text-muted-foreground hover:bg-muted/40"
+                        : "border-border text-muted-foreground hover:bg-muted/40",
+                      isDisabled && "opacity-50 cursor-not-allowed hover:bg-transparent"
                     )}
                   >
                     <Icon className="h-4 w-4" />
                     {meta.label}
+                    {isDisabled && <span className="text-[10px] text-muted-foreground">No balance</span>}
                   </button>
                 );
               })}
@@ -452,7 +476,7 @@ const MyLeaves = () => {
         </div>
       </div>
 
-      <ApplyDialog open={applyOpen} onClose={() => setApplyOpen(false)} allowedTypes={visibleLeaveTypes} />
+      <ApplyDialog open={applyOpen} onClose={() => setApplyOpen(false)} allowedTypes={visibleLeaveTypes} balance={balance ?? undefined} />
     </div>
   );
 };

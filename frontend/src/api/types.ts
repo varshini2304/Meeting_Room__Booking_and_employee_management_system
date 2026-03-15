@@ -12,6 +12,10 @@ export interface User {
   branch?: string;
   block?: string;
   floor?: string;
+  department?: string;
+  designation?: string;
+  phone?: string;
+  isActive?: boolean;
 }
 
 export interface Room {

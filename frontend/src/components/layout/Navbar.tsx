@@ -26,13 +26,12 @@ export function Navbar() {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <header className="h-14 flex items-center justify-between px-4 border-b border-border bg-card">
+    <header className="h-16 flex items-center justify-between px-4 border-b border-border bg-white/80 backdrop-blur">
       <div className="flex items-center gap-3">
         <SidebarTrigger className="text-muted-foreground" />
-        <div className="flex items-center gap-2 text-muted-foreground">
-        </div>
+        <div className="flex items-center gap-2 text-muted-foreground" />
       </div>
-      <div className="flex items-center gap-2 bg-secondary rounded-full px-4 py-1.5 w-64">
+      <div className="flex items-center gap-2 bg-slate-50 border border-border rounded-full px-4 py-2 w-72 shadow-sm">
         <Search className="h-4 w-4 text-muted-foreground" />
         <input
           type="text"
@@ -44,9 +43,9 @@ export function Navbar() {
         {/* Notifications Popover */}
         <Popover>
           <PopoverTrigger asChild>
-            <button className="relative text-muted-foreground hover:text-foreground">
+            <button className="relative text-muted-foreground hover:text-foreground h-10 w-10 rounded-xl bg-white border border-border shadow-sm flex items-center justify-center">
               <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center font-bold">
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br from-red-500 to-pink-500 text-white text-[10px] flex items-center justify-center font-bold">
                 {unreadCount}
               </span>
             </button>
@@ -74,8 +73,8 @@ export function Navbar() {
         {/* User Avatar Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="w-8 h-8 rounded-full bg-muted overflow-hidden cursor-pointer">
-              <div className="w-full h-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+            <button className="w-10 h-10 rounded-xl bg-white border border-border overflow-hidden cursor-pointer shadow-sm">
+              <div className="w-full h-full bg-gradient-to-br from-blue-500/15 to-cyan-400/15 flex items-center justify-center text-xs font-bold text-primary">
                 {user?.name?.charAt(0)?.toUpperCase() || "U"}
               </div>
             </button>

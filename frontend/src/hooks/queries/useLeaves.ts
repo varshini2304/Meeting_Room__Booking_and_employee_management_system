@@ -59,15 +59,19 @@ export const useTeamCalendar = (month?: number, year?: number) =>
 
 // ── Manager hooks ─────────────────────────────────────────────────────────────
 
-export const useAllLeaves = (params?: {
-  status?: LeaveStatus;
-  from?: string;
-  to?: string;
-  employeeId?: string;
-}) =>
+export const useAllLeaves = (
+  params?: {
+    status?: LeaveStatus;
+    from?: string;
+    to?: string;
+    employeeId?: string;
+  },
+  enabled = true
+) =>
   useQuery({
     queryKey: ["leaves", "all", params],
     queryFn: () => getAllLeavesApi(params),
+    enabled,
   });
 
 export const useApproveLeave = () => {
