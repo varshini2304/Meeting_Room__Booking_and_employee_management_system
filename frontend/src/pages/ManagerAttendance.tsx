@@ -263,39 +263,40 @@ const ManagerAttendance = () => {
             <p className="text-sm text-muted-foreground mt-1">Monitor daily check-ins and corrections in real time.</p>
           </div>
           <div className="flex items-center gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="gap-2 rounded-xl">
-                <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                {selectedDate.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="p-0 w-auto">
-              <div className="rounded-xl border border-border bg-card p-3 shadow-lg">
-                <div className="text-xs font-semibold text-muted-foreground mb-2">Select date</div>
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(d) => {
-                    if (!d) return;
-                    setDate(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`);
-                  }}
-                  disabled={{ after: new Date() }}
-                  className="rounded-xl border border-border bg-background"
-                />
-              </div>
-            </PopoverContent>
-          </Popover>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            disabled={isFetching}
-            className="gap-1.5"
-          >
-            <RefreshCw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} />
-            Refresh
-          </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="gap-2 rounded-xl">
+                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                  {selectedDate.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="p-0 w-auto">
+                <div className="rounded-xl border border-border bg-card p-3 shadow-lg">
+                  <div className="text-xs font-semibold text-muted-foreground mb-2">Select date</div>
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(d) => {
+                      if (!d) return;
+                      setDate(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`);
+                    }}
+                    disabled={{ after: new Date() }}
+                    className="rounded-xl border border-border bg-background"
+                  />
+                </div>
+              </PopoverContent>
+            </Popover>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="gap-1.5"
+            >
+              <RefreshCw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} />
+              Refresh
+            </Button>
+          </div>
         </div>
       </div>
 
