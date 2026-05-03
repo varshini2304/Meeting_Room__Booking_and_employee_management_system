@@ -13,6 +13,7 @@ import BookingHistory from "./pages/BookingHistory";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
+import Landing from "./pages/Landing";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import Attendance from "./pages/Attendance";
 import ManagerAttendance from "./pages/ManagerAttendance";
@@ -34,7 +35,7 @@ const queryClient = new QueryClient();
 const RoleEntry = () => {
   const { isAuthenticated, role, isLoading } = useAuth();
   if (isLoading) return <div className="p-6 text-sm text-muted-foreground">Loading...</div>;
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <Landing />;
   return <Navigate to={role === "manager" ? "/manager" : "/dashboard"} replace />;
 };
 
