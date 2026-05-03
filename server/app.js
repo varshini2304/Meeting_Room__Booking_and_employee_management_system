@@ -58,6 +58,49 @@ app.use(
 app.use(express.json());
 
 app.get("/health", (req, res) => res.json({ status: "ok" }));
+
+app.get("/", (req, res) => {
+  const startedAt = new Date(Date.now() - process.uptime() * 1000).toISOString();
+  res.type("html").send(`<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Meeting Room API</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 720px; margin: 4rem auto; padding: 0 1.5rem; line-height: 1.6; }
+    h1 { margin-bottom: 0.25rem; }
+    .ok { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem; border-radius: 999px; background: #e6f7ed; color: #0a6b3a; font-weight: 600; font-size: 0.875rem; }
+    .ok::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #19a05a; }
+    code { background: rgba(127,127,127,0.15); padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.9em; }
+    ul { padding-left: 1.25rem; }
+    .meta { color: #666; font-size: 0.9rem; }
+    @media (prefers-color-scheme: dark) {
+      body { background: #0b0d12; color: #e6e6e6; }
+      .ok { background: #0e2a1c; color: #5fdc9b; }
+      .meta { color: #aaa; }
+    }
+  </style>
+</head>
+<body>
+  <span class="ok">Backend is running</span>
+  <h1>Meeting Room API</h1>
+  <p class="meta">Toyota Meeting Room Booking &amp; Employee Management — backend service.</p>
+  <p>This URL serves the JSON API only. The user-facing app lives on the frontend deployment.</p>
+  <h3>Useful endpoints</h3>
+  <ul>
+    <li><code>GET /health</code> — liveness check (returns <code>{"status":"ok"}</code>)</li>
+    <li><code>POST /api/auth/login</code> — authenticate</li>
+    <li><code>POST /api/auth/register</code> — create account</li>
+    <li><code>GET /api/rooms</code> — list rooms (auth required)</li>
+    <li><code>GET /api/bookings/my</code> — list your bookings (auth required)</li>
+  </ul>
+  <p class="meta">Started: ${startedAt} &middot; Uptime: ${Math.round(process.uptime())}s &middot; Node ${process.version}</p>
+</body>
+</html>`);
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/api/bookings", bookingRoutes);
