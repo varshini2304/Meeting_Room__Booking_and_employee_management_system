@@ -43,7 +43,9 @@ const BookRoom = () => {
   const timeSlots = useMemo(() => generateTimeSlots(8, 20), []);
   const dateStr = toLocalDateKey(date || new Date());
   const { data: dayBookings = [] } = useDayBookings(dateStr, Boolean(dateStr));
-  const { data: rooms = [] } = useRoomAvailability({ date: dateStr, startTime: selectedTime }, Boolean(selectedTime));
+  const { data: availability } = useRoomAvailability({ date: dateStr, startTime: selectedTime }, Boolean(selectedTime));
+  const rooms = availability?.rooms ?? [];
+  const availabilityMessage = availability?.message ?? null;
 
   const bookedSlots = useMemo(
     () => [...new Set(dayBookings.map((booking) => booking.startTime))],
@@ -147,7 +149,12 @@ const BookRoom = () => {
               />
             ))}
           </div>
-          {selectedTime && rooms.length === 0 && (
+          {selectedTime && availabilityMessage && (
+            <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {availabilityMessage}
+            </div>
+          )}
+          {selectedTime && !availabilityMessage && rooms.length === 0 && (
             <p className="text-sm text-muted-foreground mt-4">No rooms available for the selected date and time.</p>
           )}
         </div>

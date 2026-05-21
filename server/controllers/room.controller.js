@@ -1,6 +1,14 @@
 import { Booking } from "../models/booking.model.js";
 import { Room } from "../models/room.model.js";
 import { User } from "../models/user.model.js";
+import { createBulkNotifications } from "../services/notification.service.js";
+import { sendRoomDeletedCancellationEmail } from "../services/email.service.js";
+
+const MAX_ROOMS = 6;
+
+const buildRoomLabel = (room) => `${room.branch}-${room.block}-${room.roomNumber}`;
+const buildRoomLocation = (room) =>
+  `${room.country}, ${room.branch}, ${room.block}, ${room.floor}`;
 
 const toDateTime = (date, time) => new Date(`${date}T${time}:00`);
 const getCheckInCutoff = (date, startTime) => {
@@ -38,10 +46,16 @@ const buildRoomFilters = (query) => {
 
 export const createRoom = async (req, res, next) => {
   try {
+    const existingCount = await Room.countDocuments();
+    if (existingCount >= MAX_ROOMS) {
+      return res.status(400).json({
+        message: `Maximum number of rooms (${MAX_ROOMS}) reached. Cannot create more rooms.`,
+      });
+    }
     const room = await Room.create(req.body);
-    res.status(201).json(room);
+    return res.status(201).json(room);
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -57,8 +71,54 @@ export const editRoom = async (req, res, next) => {
 
 export const deleteRoom = async (req, res, next) => {
   try {
-    const room = await Room.findByIdAndDelete(req.params.id);
+    const room = await Room.findById(req.params.id);
     if (!room) return res.status(404).json({ message: "Room not found" });
+
+    const roomLabel = buildRoomLabel(room);
+    const roomLocation = buildRoomLocation(room);
+    const now = new Date();
+
+    const activeBookings = await Booking.find({ roomId: room._id, status: "booked" }).lean();
+
+    if (activeBookings.length > 0) {
+      const bookingIds = activeBookings.map((b) => b._id);
+      await Booking.updateMany(
+        { _id: { $in: bookingIds } },
+        { $set: { status: "cancelled", canceledAt: now } },
+      );
+
+      const ownerIds = [...new Set(activeBookings.map((b) => String(b.ownerId)))];
+      const owners = await User.find({ _id: { $in: ownerIds } }).lean();
+      const ownersById = new Map(owners.map((u) => [String(u._id), u]));
+
+      await createBulkNotifications(
+        activeBookings.map((b) => ({
+          userId: b.ownerId,
+          title: "Booking Cancelled — Room Removed",
+          message: `Your booking for ${roomLabel} on ${b.date} ${b.startTime}-${b.endTime} was cancelled because the room was deleted by a manager.`,
+          type: "system",
+          metadata: { bookingId: b._id, roomId: room._id, reason: "room_deleted" },
+        })),
+      );
+
+      await Promise.all(
+        activeBookings.map((b) => {
+          const owner = ownersById.get(String(b.ownerId));
+          if (!owner?.email) return Promise.resolve();
+          return sendRoomDeletedCancellationEmail({
+            to: owner.email,
+            ownerName: owner.name,
+            roomName: roomLabel,
+            location: roomLocation,
+            date: b.date,
+            startTime: b.startTime,
+            endTime: b.endTime,
+          });
+        }),
+      );
+    }
+
+    await Room.deleteOne({ _id: room._id });
     return res.status(204).send();
   } catch (error) {
     return next(error);
@@ -82,8 +142,22 @@ export const getRoomAvailability = async (req, res, next) => {
     const rooms = await Room.find(buildRoomFilters(req.query)).lean();
     const booked = await Booking.find({ date, startTime, status: "booked" }).select("roomId").lean();
     const bookedRoomIds = new Set(booked.map((b) => String(b.roomId)));
-    const response = rooms.map((room) => ({ ...room, isAvailable: !bookedRoomIds.has(String(room._id)) }));
-    res.json(response);
+    const roomsWithAvailability = rooms.map((room) => ({
+      ...room,
+      isAvailable: !bookedRoomIds.has(String(room._id)),
+    }));
+
+    const allBooked =
+      roomsWithAvailability.length > 0 &&
+      roomsWithAvailability.every((room) => !room.isAvailable);
+
+    res.json({
+      rooms: roomsWithAvailability,
+      allBooked,
+      message: allBooked
+        ? "All meeting rooms have been booked at this time."
+        : null,
+    });
   } catch (error) {
     next(error);
   }

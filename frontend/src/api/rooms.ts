@@ -24,8 +24,14 @@ const toQuery = (params: Record<string, string | number | undefined>) => {
 
 export const getRoomsApi = (filters: RoomFilters = {}) => apiRequest<Room[]>(`/rooms${toQuery(filters)}`);
 
+export interface RoomAvailabilityResponse {
+  rooms: Room[];
+  allBooked: boolean;
+  message: string | null;
+}
+
 export const getRoomAvailabilityApi = (filters: RoomFilters) =>
-  apiRequest<Room[]>(`/rooms/availability${toQuery(filters)}`);
+  apiRequest<RoomAvailabilityResponse>(`/rooms/availability${toQuery(filters)}`);
 
 export const createRoomApi = (payload: Partial<Room>) =>
   apiRequest<Room>("/rooms", {

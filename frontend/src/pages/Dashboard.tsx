@@ -22,7 +22,9 @@ const getRoomImage = (room: Room) => {
 const Dashboard = () => {
   const navigate = useNavigate();
   const today = new Date().toISOString().slice(0, 10);
-  const { data: rooms = [] } = useRoomAvailability({ date: today, startTime: "10:00" }, true);
+  const { data: availability } = useRoomAvailability({ date: today, startTime: "10:00" }, true);
+  const rooms = availability?.rooms ?? [];
+  const availabilityMessage = availability?.message ?? null;
   const { data: upcomingBookings = [] } = useMyBookings();
 
   return (
@@ -32,6 +34,11 @@ const Dashboard = () => {
         <div className="flex-1">
           <div className="bg-card rounded-xl border border-border shadow-sm p-5">
             <h2 className="font-semibold text-card-foreground mb-4">Available Meeting Rooms</h2>
+            {availabilityMessage && (
+              <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                {availabilityMessage}
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {rooms.map((room) => (
                 <RoomCard

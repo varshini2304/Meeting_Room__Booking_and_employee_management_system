@@ -40,7 +40,9 @@ const RoomAvailability = () => {
   });
 
   const { data: allBookings = [] } = useAllBookings();
-  const { data: rooms = [] } = useRoomAvailability({ date, startTime: time }, true);
+  const { data: availability } = useRoomAvailability({ date, startTime: time }, true);
+  const rooms = availability?.rooms ?? [];
+  const availabilityMessage = availability?.message ?? null;
 
   const totalToday = allBookings.filter((b) => b.date === date).length;
   const cancelled = allBookings.filter((b) => b.status === "cancelled").length;
@@ -125,6 +127,12 @@ const RoomAvailability = () => {
           </Button>
         </div>
       </div>
+
+      {availabilityMessage && (
+        <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {availabilityMessage}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {uiRooms.map((room) => (
