@@ -285,10 +285,11 @@ export function AiAssistant() {
 
       setMessages((prev) => [...prev, assistantMsg]);
     } catch (error: any) {
+      const detail = error?.message ? `: ${error.message}` : "";
       const errorMsg: ChatMessage = {
         id: "msg_err_" + Date.now(),
         sender: "assistant",
-        text: "I encountered an error communicating with the AI service. Please try again or use the traditional interface.",
+        text: `I encountered an error communicating with the AI service${detail}. Please check backend connectivity or try again.`,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
       setMessages((prev) => [...prev, errorMsg]);
