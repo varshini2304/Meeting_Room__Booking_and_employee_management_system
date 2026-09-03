@@ -1,6 +1,7 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { SidebarNav } from "@/components/layout/Sidebar";
 import { Navbar } from "@/components/layout/Navbar";
+import { AiAssistant } from "@/components/ai/AiAssistant";
 import { Outlet } from "react-router-dom";
 
 interface AppLayoutProps {
@@ -18,6 +19,7 @@ export function AppLayout({ children, variant = "user" }: AppLayoutProps) {
           <main className="flex-1 p-6">{children ?? <Outlet />}</main>
         </div>
       </div>
+      <AiAssistant />
     </SidebarProvider>
   );
 }

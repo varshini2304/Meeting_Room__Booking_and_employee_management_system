@@ -1,5 +1,6 @@
 import { Booking } from "../models/booking.model.js";
 import {
+  cancelBooking as cancelBookingService,
   cancelNoShowBookings,
   confirmOccupancyByToken,
   createBooking as createBookingService,
@@ -13,7 +14,8 @@ export const createBooking = async (req, res, next) => {
       roomId: req.body.roomId,
       date: req.body.date,
       startTime: req.body.startTime,
-      invitedMembers: req.body.invitedMembers || []
+      invitedMembers: req.body.invitedMembers || [],
+      title: req.body.title || ""
     });
     res.status(201).json(booking);
   } catch (error) {
@@ -74,14 +76,7 @@ export const getBookingHistory = async (req, res, next) => {
 
 export const cancelBooking = async (req, res, next) => {
   try {
-    const booking = await Booking.findById(req.params.id);
-    if (!booking) return res.status(404).json({ message: "Booking not found" });
-    if (String(booking.ownerId) !== String(req.user._id)) {
-      return res.status(403).json({ message: "Only booking owner can cancel" });
-    }
-    booking.status = "cancelled";
-    booking.canceledAt = new Date();
-    await booking.save();
+    const booking = await cancelBookingService(req.params.id, req.user._id);
     return res.json({ message: "Booking cancelled", booking });
   } catch (error) {
     return next(error);

@@ -13,7 +13,8 @@ const bookingSchema = new mongoose.Schema(
       default: () => String(Math.floor(100000 + Math.random() * 900000)),
       trim: true
     },
-    status: { type: String, enum: ["booked", "cancelled"], default: "booked" },
+    title: { type: String, default: "", trim: true },
+    status: { type: String, enum: ["booked", "cancelled", "completed"], default: "booked" },
     occupancyConfirmedAt: { type: Date, default: null },
     canceledAt: { type: Date, default: null }
   },

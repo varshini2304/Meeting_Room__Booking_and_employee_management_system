@@ -27,3 +27,9 @@ Thumbs.db
 .vscode/
 .idea/
 .git_backup/
+
+# Scratch planning files
+plan_content.py
+plan_raw.md
+write_plan.js
+

@@ -3,6 +3,7 @@ import { Room } from "../models/room.model.js";
 import { User } from "../models/user.model.js";
 import { createBulkNotifications } from "../services/notification.service.js";
 import { sendRoomDeletedCancellationEmail } from "../services/email.service.js";
+import { getRoomAvailabilityService } from "../services/room.service.js";
 
 const MAX_ROOMS = 6;
 
@@ -139,25 +140,8 @@ export const getRoomAvailability = async (req, res, next) => {
     const { date, startTime } = req.query;
     if (!date || !startTime) return res.status(400).json({ message: "date and startTime are required" });
 
-    const rooms = await Room.find(buildRoomFilters(req.query)).lean();
-    const booked = await Booking.find({ date, startTime, status: "booked" }).select("roomId").lean();
-    const bookedRoomIds = new Set(booked.map((b) => String(b.roomId)));
-    const roomsWithAvailability = rooms.map((room) => ({
-      ...room,
-      isAvailable: !bookedRoomIds.has(String(room._id)),
-    }));
-
-    const allBooked =
-      roomsWithAvailability.length > 0 &&
-      roomsWithAvailability.every((room) => !room.isAvailable);
-
-    res.json({
-      rooms: roomsWithAvailability,
-      allBooked,
-      message: allBooked
-        ? "All meeting rooms have been booked at this time."
-        : null,
-    });
+    const result = await getRoomAvailabilityService({ date, startTime, filters: req.query });
+    res.json(result);
   } catch (error) {
     next(error);
   }
