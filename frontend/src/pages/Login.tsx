@@ -49,10 +49,10 @@ const Login = () => {
         <div className="w-full max-w-[660px] text-center">
           <div className="mx-auto mb-3 flex h-24 w-36 items-center justify-center rounded-[999px] border-[5px] border-slate-500/80 bg-gradient-to-b from-white to-slate-200 shadow-inner">
             <div className="rounded-[999px] border-4 border-slate-500/80 px-7 py-2">
-              <span className="text-3xl font-bold tracking-tight text-slate-700">T</span>
+              <span className="text-3xl font-bold tracking-tight text-slate-700">M</span>
             </div>
           </div>
-          <h1 className="text-5xl font-black leading-none tracking-tight text-[#da1e27] sm:text-6xl">TOYOTA</h1>
+          <h1 className="text-5xl font-black leading-none tracking-tight text-slate-700 sm:text-6xl">ROOMS</h1>
 
           <p className="mb-10 mt-9 text-2xl font-semibold tracking-tight text-[#4b5563] sm:text-4xl">
             Enterprise Meeting Room Booking System
@@ -90,7 +90,7 @@ const Login = () => {
 
               <Button
                 type="submit"
-                className="mt-1 h-16 w-full rounded-2xl bg-gradient-to-b from-[#2f89ff] to-[#0f65d3] text-2xl font-bold text-white shadow-[0_10px_20px_rgba(15,101,211,0.35)] hover:from-[#2d7fe9] hover:to-[#0e5ec2] sm:text-4xl"
+                className="mt-1 h-16 w-full rounded-2xl bg-gradient-to-b from-[#2f89ff] to-[#0f65d3] text-2xl font-bold text-white shadow-[0_10px_20px_rgba(15,101,211,0.35)] hover:from-[#2d7fe9] hover:to-[#0e5ec2] sm:text-3xl"
                 disabled={isSubmitting}
               >
                 Login
