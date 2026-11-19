@@ -25,11 +25,11 @@ const Landing = () => {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2">
             <div className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground font-bold">
-              T
+              M
             </div>
             <div>
-              <div className="text-sm font-semibold tracking-wide">TOYOTA</div>
-              <div className="text-xs text-muted-foreground">Meeting Room Platform</div>
+              <div className="text-sm font-semibold tracking-wide">MEETING ROOMS</div>
+              <div className="text-xs text-muted-foreground">Room Booking Platform</div>
             </div>
           </div>
           <Button onClick={() => navigate("/login")} className="gap-2">
@@ -216,7 +216,7 @@ const Landing = () => {
 
       <footer className="border-t border-border/60 bg-white">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-6 py-6 text-sm text-muted-foreground md:flex-row">
-          <div>© {new Date().getFullYear()} Toyota Meeting Room Platform</div>
+          <div>© {new Date().getFullYear()} Meeting Room Platform</div>
           <div>Built with React, Node.js, and MongoDB</div>
         </div>
       </footer>
