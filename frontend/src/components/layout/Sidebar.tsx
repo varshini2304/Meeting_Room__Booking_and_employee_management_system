@@ -68,11 +68,11 @@ export function SidebarNav({ variant = "user" }: SidebarNavProps) {
     >
       <div className="p-4 pb-6 flex items-center gap-3">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center shadow-sm">
-          <span className="text-xs font-extrabold text-white">T</span>
+          <span className="text-xs font-extrabold text-white">M</span>
         </div>
         {!collapsed && (
           <div className="leading-tight">
-            <span className="text-lg font-extrabold tracking-wide text-slate-900">TOYOTA</span>
+            <span className="text-lg font-extrabold tracking-wide text-slate-900">ROOMS</span>
             <div className="text-[10px] text-slate-500">Room Booking</div>
           </div>
         )}
