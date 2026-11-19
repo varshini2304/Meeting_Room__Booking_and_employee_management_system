@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import conferenceRoom from "./assets/conference-room.jpg";
 import "./index.css";
 
@@ -121,11 +121,11 @@ function App() {
         <header className="brand">
           <div className="logo-badge">
             <div className="logo-ring">
-              <span>T</span>
+              <span>M</span>
             </div>
           </div>
-          <h1 className="brand-title">TOYOTA</h1>
-          <p className="brand-sub">Toyota Meeting Room Display</p>
+          <h1 className="brand-title">MEETING ROOMS</h1>
+          <p className="brand-sub">Meeting Room Display</p>
           <p className="brand-desc">Select the room this display belongs to.</p>
         </header>
 
@@ -269,11 +269,10 @@ function App() {
           </section>
         )}
 
-        <footer className="footer">TOYOTA</footer>
+        <footer className="footer">Meeting Room Display</footer>
       </main>
     </div>
   );
 }
 
 export default App;
-
