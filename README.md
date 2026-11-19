@@ -1,4 +1,4 @@
-# Toyota Meeting Room Booking System (MERN)
+# Meeting Room Booking System (MERN)
 
 Enterprise-grade starter for a Toyota employee meeting room booking platform with JWT auth, role-based access, booking constraints, email confirmations, and notifications.
 
